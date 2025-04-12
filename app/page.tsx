@@ -8,7 +8,13 @@ import DocumentList from '@/components/document-list'
 export default async function Home() {
   const supabase = createServerComponentClient<Database>({ cookies })
 
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
 
+  if (!session) {
+    redirect('/auth')
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">
