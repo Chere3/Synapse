@@ -1,40 +1,122 @@
-# Welcome to Remix!
+# Synapse Legal - Legal Document Analysis Platform
 
-- 📖 [Remix docs](https://remix.run/docs)
+A full-stack application for analyzing legal documents using AI-powered analysis through the Cerebras API.
 
-## Development
+## Features
 
-Run the dev server:
+- User authentication with Supabase
+- Document upload and management
+- AI-powered legal document analysis
+- Real-time status updates
+- Modern and responsive UI
 
-```shellscript
-npm run dev
+## Prerequisites
+
+- Node.js 18+ or Bun
+- Supabase account
+- Cerebras API access
+
+## Setup
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/synapse-legal.git
+cd synapse-legal
 ```
 
-## Deployment
-
-First, build your app for production:
-
-```sh
-npm run build
+2. Install dependencies:
+```bash
+bun install
 ```
 
-Then run the app in production mode:
+3. Create a `.env.local` file in the root directory with the following variables:
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
-```sh
-npm start
+# Cerebras API Configuration
+CEREBRAS_API_KEY=your-cerebras-api-key
+CEREBRAS_API_URL=https://api.cerebras.com/v1
+
+# Site URL (for auth redirects)
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-Now you'll need to pick a host to deploy it to.
+4. Set up your Supabase database with the following tables:
 
-### DIY
+```sql
+-- Documents table
+create table documents (
+  id uuid default uuid_generate_v4() primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  user_id uuid references auth.users not null,
+  title text not null,
+  content text not null,
+  status text not null default 'pending'
+);
 
-If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
+-- Analysis table
+create table analysis (
+  id uuid default uuid_generate_v4() primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  document_id uuid references documents not null,
+  user_id uuid references auth.users not null,
+  analysis jsonb not null,
+  status text not null default 'pending'
+);
 
-Make sure to deploy the output of `npm run build`
+-- Set up Row Level Security (RLS)
+alter table documents enable row level security;
+alter table analysis enable row level security;
 
-- `build/server`
-- `build/client`
+-- Create policies
+create policy "Users can view their own documents"
+  on documents for select
+  using (auth.uid() = user_id);
 
-## Styling
+create policy "Users can insert their own documents"
+  on documents for insert
+  with check (auth.uid() = user_id);
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+create policy "Users can view their own analysis"
+  on analysis for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert their own analysis"
+  on analysis for insert
+  with check (auth.uid() = user_id);
+```
+
+## Running the Application
+
+1. Start the development server:
+```bash
+bun run dev
+```
+
+2. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Production Deployment
+
+1. Build the application:
+```bash
+bun run build
+```
+
+2. Start the production server:
+```bash
+bun run start
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
