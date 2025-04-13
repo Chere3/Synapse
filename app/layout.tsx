@@ -1,4 +1,4 @@
-import { Inter } from 'next/font/google'
+import { Domine, Inter } from 'next/font/google'
 import './globals.css'
 import { Database } from '@/types/supabase'
 import { SupabaseProvider } from '@/components/providers/supabase-provider'
@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'Synapse Legal - Legal Document Analysis',
-  description: 'AI-powered legal document analysis platform',
+  description: 'Legal made easy',
 }
 
 export default function RootLayout({

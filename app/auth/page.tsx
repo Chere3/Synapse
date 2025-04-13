@@ -5,7 +5,9 @@ import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/providers/auth-provider'
-import { Session } from '@supabase/supabase-js'
+import { Domine } from 'next/font/google'
+
+const domine = Domine({preload: true, subsets: ["latin"]})
 
 export default function AuthPage() {
   const [mounted, setMounted] = useState(false)
@@ -17,19 +19,24 @@ export default function AuthPage() {
     setMounted(true)
     
     if (!loading) {
-      // Check if we have a session
-      supabaseClient.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          router.push('/')
+      // Set up auth state change listener
+      const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          router.replace('/dashboard')
         }
       })
+
+      // Cleanup subscription
+      return () => {
+        subscription.unsubscribe()
+      }
     }
   }, [router, supabaseClient, loading])
 
   if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
       </div>
     )
   }
@@ -45,25 +52,43 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Welcome to Synapse Legal
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to analyze your legal documents
-          </p>
+    <div className="min-h-screen flex bg-gray-50">
+      {/* Left side - Form */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className={`mt-6 text-3xl font-extrabold text-gray-900 ${domine.className}`}>
+              Welcome to Synapse Legal
+            </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Sign in to analyze your legal documents
+            </p>
+          </div>
+          <div className="mt-8">
+            <Auth
+              supabaseClient={supabaseClient}
+              appearance={{
+                theme: ThemeSupa,
+                variables: {
+                  default: {
+                    colors: {
+                      brand: '#f97316', // orange-500
+                      brandAccent: '#ea580c', // orange-600
+                    },
+                  },
+                },
+              }}
+              providers={['google']}
+              redirectTo={`${window.location.origin}/auth/callback`}
+              theme="light"
+            />
+          </div>
         </div>
-        <div className="mt-8">
-          <Auth
-            supabaseClient={supabaseClient}
-            appearance={{ theme: ThemeSupa }}
-            providers={['google']}
-            redirectTo={`${window.location.origin}/auth/callback`}
-            theme="light"
-          />
-        </div>
+      </div>
+
+      {/* Right side - Image */}
+      <div className="hidden md:flex w-1/2 bg-orange-500 items-center justify-center">
+        <div className="w-full h-full bg-[url('/images/auth-bg.jpg')] bg-cover bg-center opacity-90"></div>
       </div>
     </div>
   )

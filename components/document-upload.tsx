@@ -5,13 +5,21 @@ import { useAuth } from './providers/auth-provider'
 import { toast } from 'react-toastify'
 import { Upload, FileText } from 'lucide-react'
 import { extractTextFromFile } from '@/utils/ocr'
-import { Progress } from '@/components/ui/progress'
+import { analyzeDocumentText, RiskAnalysis } from '@/utils/analysis'
+import { Progress } from './ui/progress'
+import AnalysisResults from './analysis-results'
+import { Domine } from 'next/font/google'
+
+const domine = Domine({preload: true, subsets: ['latin']})
 
 export default function DocumentUpload() {
   const { supabaseClient, user } = useAuth()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState('')
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisProgress, setAnalysisProgress] = useState(0)
+  const [analysisResults, setAnalysisResults] = useState<RiskAnalysis[] | null>(null)
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (!user) {
@@ -59,7 +67,7 @@ export default function DocumentUpload() {
       setCurrentStep('Processing document...')
       let extractedText = ''
       try {
-        extractedText = await extractTextFromFile(file, (step, progress, total) => {
+        extractedText = await extractTextFromFile(file, (step: any, progress: any, total: any) => {
           setCurrentStep(step)
           setUploadProgress((progress / total) * 100)
         })
@@ -98,6 +106,41 @@ export default function DocumentUpload() {
         throw new Error('No document returned from server')
       }
 
+      // Start analysis if text was extracted
+      if (extractedText) {
+        setIsAnalyzing(true)
+        setCurrentStep('Analyzing document...')
+        try {
+          const analysis = await analyzeDocumentText(extractedText, (step, progress, total) => {
+            setCurrentStep(step)
+            setAnalysisProgress((progress / total) * 100)
+          })
+
+          // Save analysis results
+          await supabaseClient
+            .from('analysis')
+            .insert({
+              document_id: document.id,
+              user_id: user.id,
+              analysis: analysis,
+              status: 'completed'
+            })
+
+          // Update document status
+          await supabaseClient
+            .from('documents')
+            .update({ status: 'analyzed' })
+            .eq('id', document.id)
+
+          setAnalysisResults(analysis)
+        } catch (error) {
+          console.error('Analysis error:', error)
+          toast.warning('Document was uploaded but analysis failed')
+        } finally {
+          setIsAnalyzing(false)
+        }
+      }
+
       toast.success('Document uploaded successfully')
     } catch (error) {
       console.error('Error uploading document:', error)
@@ -107,6 +150,7 @@ export default function DocumentUpload() {
       setIsUploading(false)
       setUploadProgress(0)
       setCurrentStep('')
+      setAnalysisProgress(0)
     }
   }, [user])
 
@@ -133,18 +177,28 @@ export default function DocumentUpload() {
   })
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto space-y-8">
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
           ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
       >
         <input {...getInputProps()} />
-        {isUploading ? (
+        {isUploading || isAnalyzing ? (
           <div className="space-y-4">
             <p className="text-sm text-gray-600">{currentStep}</p>
-            <Progress value={uploadProgress} className="w-full" />
-            <p className="text-sm text-gray-600">{Math.round(uploadProgress)}%</p>
+            {isUploading && (
+              <div className="space-y-2">
+                <Progress value={uploadProgress} />
+                <p className="text-sm text-gray-600">{Math.round(uploadProgress)}%</p>
+              </div>
+            )}
+            {isAnalyzing && (
+              <div className="space-y-2">
+                <Progress value={analysisProgress} />
+                <p className="text-sm text-gray-600">{Math.round(analysisProgress)}%</p>
+              </div>
+            )}
           </div>
         ) : (
           <div>
@@ -157,6 +211,8 @@ export default function DocumentUpload() {
           </div>
         )}
       </div>
+
+      {analysisResults && <AnalysisResults analysis={analysisResults} />}
     </div>
   )
 } 
