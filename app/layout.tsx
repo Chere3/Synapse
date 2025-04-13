@@ -20,7 +20,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        
+        <SupabaseProvider>
+          {children}
+          <ToastContainer position="bottom-right" />
+        </SupabaseProvider>
       </body>
     </html>
   )

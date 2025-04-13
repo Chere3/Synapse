@@ -15,24 +15,33 @@ export interface Database {
           created_at: string
           user_id: string
           title: string
-          content: string
+          file_path: string
+          file_url: string
           status: 'pending' | 'analyzed' | 'reviewed'
+          file_type: string
+          file_size: number
         }
         Insert: {
           id?: string
           created_at?: string
           user_id: string
           title: string
-          content: string
+          file_path: string
+          file_url: string
           status?: 'pending' | 'analyzed' | 'reviewed'
+          file_type: string
+          file_size: number
         }
         Update: {
           id?: string
           created_at?: string
           user_id?: string
           title?: string
-          content?: string
+          file_path?: string
+          file_url?: string
           status?: 'pending' | 'analyzed' | 'reviewed'
+          file_type?: string
+          file_size?: number
         }
       }
       analysis: {

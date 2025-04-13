@@ -4,29 +4,42 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
-import { Database } from '@/types/supabase'
+import { useAuth } from '@/components/providers/auth-provider'
+import { Session } from '@supabase/supabase-js'
 
 export default function AuthPage() {
   const [mounted, setMounted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
+  const { supabaseClient, loading } = useAuth()
 
   useEffect(() => {
     setMounted(true)
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        router.push('/')
-      }
+    
+    if (!loading) {
+      // Check if we have a session
+      supabaseClient.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          router.push('/')
+        }
+      })
     }
-    checkSession()
-  }, [supabase, router])
+  }, [router, supabaseClient, loading])
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
+          <div className="text-red-500 text-center">{error}</div>
+        </div>
       </div>
     )
   }
@@ -44,10 +57,10 @@ export default function AuthPage() {
         </div>
         <div className="mt-8">
           <Auth
-            supabaseClient={supabase}
+            supabaseClient={supabaseClient}
             appearance={{ theme: ThemeSupa }}
             providers={['google']}
-            redirectTo={`${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`}
+            redirectTo={`${window.location.origin}/auth/callback`}
             theme="light"
           />
         </div>
