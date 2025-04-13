@@ -46,12 +46,11 @@ const getRiskLabel = (riskLevel: number) => {
 export default function AnalysisResults({ analysis }: AnalysisResultsProps) {
   return (
     <div className="space-y-6">
-      <h2 className={`text-2xl font-semibold text-gray-900 ${domine.className}`}>Analysis Results</h2>
       <div className="space-y-4">
         {analysis.map((item, index) => (
           <div
             key={index}
-            className="bg-white rounded-lg shadow p-6 space-y-4"
+            className="bg-gray-50 rounded-lg p-6 space-y-4"
           >
             <div className="flex items-center justify-between">
               <span className={`text-2xl font-medium ${getRiskColor(item.riskLevel)} ${domine.className} `}>

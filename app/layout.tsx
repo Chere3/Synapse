@@ -8,8 +8,8 @@ import 'react-toastify/dist/ReactToastify.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'Synapse Legal - Legal Document Analysis',
-  description: 'Legal made easy',
+  title: 'Synapse - Legal Document Analysis',
+  description: 'Upload your contracts and get a risk score',
 }
 
 export default function RootLayout({

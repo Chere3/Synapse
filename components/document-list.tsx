@@ -13,9 +13,10 @@ type Analysis = Database['public']['Tables']['analysis']['Row'] & {
 
 interface DocumentListProps {
   onAnalysisSelect: (analysis: Analysis | null) => void;
+  isCollapsed?: boolean;
 }
 
-export default function DocumentList({ onAnalysisSelect }: DocumentListProps) {
+export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: DocumentListProps) {
   const { supabaseClient, user } = useAuth()
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
@@ -99,7 +100,6 @@ export default function DocumentList({ onAnalysisSelect }: DocumentListProps) {
         return
       }
 
-      // Convert the JSON analysis to the correct type
       const typedAnalysis: Analysis = {
         ...analysis,
         analysis: analysis.analysis as RiskAnalysis[]
@@ -175,54 +175,59 @@ export default function DocumentList({ onAnalysisSelect }: DocumentListProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="scrollbar-hide">
       {documents.length === 0 ? (
         <div className="text-center text-gray-500 py-8">
           <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-          <p>No documents uploaded yet</p>
+          <p className={isCollapsed ? 'hidden' : ''}>No documents uploaded yet</p>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {documents.map((document) => (
-            <div
-              key={document.id}
-              className="bg-white rounded-lg shadow p-4 flex items-center justify-between hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => handleDocumentClick(document)}
-            >
-              <div className="flex items-center space-x-4">
-                <FileText className="h-6 w-6 text-blue-500" />
-                <div>
-                  <h3 className="font-medium">{document.title}</h3>
-                  <div className="flex items-center space-x-2 text-sm text-gray-500">
-                    {getStatusIcon(document.status)}
-                    <span>{getStatusText(document.status)}</span>
-                    <span>•</span>
-                    <span>{new Date(document.created_at).toLocaleDateString()}</span>
+        <div>
+          {documents.map((document, index) => (
+            <div key={document.id}>
+              <div
+                className="bg-white flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer py-3"
+                onClick={() => handleDocumentClick(document)}
+              >
+                <div className="flex items-center space-x-4 min-w-0">
+                  <div className={isCollapsed ? 'hidden' : 'min-w-0 flex-1'}>
+                    <h3 className="font-medium truncate">{document.title}</h3>
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      {getStatusIcon(document.status)}
+                      <span>{getStatusText(document.status)}</span>
+                      <span>•</span>
+                      <span>{new Date(document.created_at).toLocaleDateString()}</span>
+                    </div>
                   </div>
                 </div>
+                {!isCollapsed && (
+                  <div className="flex items-center space-x-2 shrink-0">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handlePreview(document)
+                      }}
+                      className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+                      title="Preview"
+                    >
+                      <Eye className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDownload(document)
+                      }}
+                      className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+                      title="Download"
+                    >
+                      <Download className="h-5 w-5" />
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handlePreview(document)
-                  }}
-                  className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
-                  title="Preview"
-                >
-                  <Eye className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDownload(document)
-                  }}
-                  className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
-                  title="Download"
-                >
-                  <Download className="h-5 w-5" />
-                </button>
-              </div>
+              {index < documents.length - 1 && (
+                <div className="h-px bg-gray-200 opacity-20" />
+              )}
             </div>
           ))}
         </div>
@@ -231,8 +236,8 @@ export default function DocumentList({ onAnalysisSelect }: DocumentListProps) {
       {/* Preview Modal */}
       {selectedDocument && previewUrl && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4">
               <h3 className="text-lg font-medium">{selectedDocument.title}</h3>
               <button
                 onClick={() => {

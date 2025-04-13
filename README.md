@@ -1,4 +1,4 @@
-# Synapse Legal - Legal Document Analysis Platform
+# Synapse - Legal Document Analysis Platform
 
 A full-stack application for analyzing legal documents using AI-powered analysis through the Cerebras API.
 
@@ -20,8 +20,8 @@ A full-stack application for analyzing legal documents using AI-powered analysis
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/synapse-legal.git
-cd synapse-legal
+git clone https://github.com/yourusername/synapse.git
+cd synapse
 ```
 
 2. Install dependencies:

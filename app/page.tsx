@@ -33,7 +33,7 @@ export default function LandingPage() {
       <nav className={`fixed w-full top-0 left-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/80 backdrop-blur-sm' : 'bg-transparent'}`}>
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className={`text-2xl font-bold text-orange-500 ${DomineFont.className}`}>Synapse Legal</div>
+            <div className={`text-2xl font-bold text-orange-500 ${DomineFont.className}`}>Synapse</div>
             <div className="flex items-center space-x-4">
               <Link href="/auth" className="text-orange-500 hover:text-orange-400">
                 Sign In
@@ -198,7 +198,7 @@ export default function LandingPage() {
               Ready to Transform Your Legal Workflow?
             </h2>
             <p className="text-xl text-gray-600 mb-8">
-              Join thousands of legal professionals who trust Synapse Legal
+              Join thousands of legal professionals who trust Synapse
             </p>
             <Link
               href="/auth"
@@ -214,7 +214,7 @@ export default function LandingPage() {
           <div className="container mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div>
-                <h3 className={`text-xl font-bold mb-4 ${DomineFont.className}`}>Synapse Legal</h3>
+                <h3 className={`text-xl font-bold mb-4 ${DomineFont.className}`}>Synapse</h3>
                 <p className="text-gray-400">
                   AI-powered legal document analysis platform
                 </p>
@@ -245,7 +245,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-              © {new Date().getFullYear()} Synapse Legal. All rights reserved.
+              © {new Date().getFullYear()} Synapse. All rights reserved.
             </div>
           </div>
         </footer>

@@ -9,6 +9,8 @@ import { Domine } from 'next/font/google'
 import { Database } from '@/types/supabase'
 import AnalysisResults from '@/components/analysis-results'
 import { RiskAnalysis } from '@/utils/analysis'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import ChatInterface from '@/components/chat-interface'
 
 const domine = Domine({preload: true, subsets: ['latin']})
 
@@ -20,12 +22,23 @@ export default function DashboardPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [selectedAnalysis, setSelectedAnalysis] = useState<Analysis | null>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/auth')
     }
   }, [user, loading, router])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   if (loading) {
     return (
@@ -37,7 +50,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
+      <nav className={`bg-gray-100 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'backdrop-blur-md bg-gray-100/80' : ''}`}>
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className={`text-2xl font-bold text-orange-500 ${domine.className}`}>Synapse Legal</div>
@@ -54,32 +67,65 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <main className="container mx-auto px-6 py-8">
-        <h1 className={`text-5xl font-bold text-gray-900 ${domine.className} mb-8`}>Dashboard</h1>
-        
-        <div className="flex flex-col space-y-8">
-          {/* Analysis Results Section - Full Width */}
-          <div className="w-full">
-            <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Analysis Results</h2>
-            <div className="bg-white rounded-lg shadow p-6">
-              {selectedAnalysis ? (
-                <AnalysisResults analysis={selectedAnalysis.analysis} />
-              ) : (
-                <p className="text-gray-500 text-center">Select a document to view its analysis</p>
-              )}
+      <main className="flex h-[calc(100vh-73px)] pt-[73px]">
+        {/* Sidebar */}
+        <div className={`bg-white transition-all duration-300 ${isSidebarOpen ? 'w-96' : 'w-16'}`}>
+          <div className="h-full flex flex-col">
+            <div className="p-4 flex items-center justify-between">
+              <h2 className={`text-lg font-semibold ${!isSidebarOpen && 'hidden'}`}>Your Documents</h2>
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="p-2 hover:bg-gray-50 rounded-lg"
+              >
+                {isSidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto scrollbar-hide px-4">
+              <DocumentList onAnalysisSelect={setSelectedAnalysis} isCollapsed={!isSidebarOpen} />
             </div>
           </div>
+        </div>
 
-          {/* Documents and Upload Section - Side by Side */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Your Documents</h2>
-              <DocumentList onAnalysisSelect={setSelectedAnalysis} />
-            </div>
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div className="container mx-auto px-6 py-8">
             
-            <div>
-              <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Upload New Document</h2>
-              <DocumentUpload />
+            <div className="flex flex-col space-y-8">
+              <div className="flex gap-8">
+                {/* Analysis Results Section */}
+                <div className="flex-1 flex flex-col">
+                  <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Analysis Results</h2>
+                  <div className="bg-white rounded-lg p-6 flex-1 overflow-y-auto scrollbar-hide max-h-[calc(100vh-250px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {selectedAnalysis ? (
+                      <AnalysisResults analysis={selectedAnalysis.analysis} />
+                    ) : (
+                      <p className="text-gray-500 text-center">Select a document to view its analysis</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="w-96 space-y-8">
+                  {/* Upload Section */}
+                  <div>
+                    <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Upload New Document</h2>
+                    <div className="bg-white rounded-lg p-6">
+                      <DocumentUpload />
+                    </div>
+                  </div>
+
+                  {/* Chat Section */}
+                  <div>
+                    <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Chat with Analysis</h2>
+                    <div className="bg-white rounded-lg p-6 h-[400px]">
+                      <ChatInterface 
+                        analysisText={JSON.stringify(selectedAnalysis?.analysis ?? [])} 
+                        documentId={selectedAnalysis?.id ?? ""} 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
