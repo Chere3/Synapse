@@ -22,24 +22,14 @@ export async function POST(request: Request) {
 
     // Get the analysis context from the system message
     const systemMessage = messages.find((m: any) => m.role === 'system')
-    const analysisContext = systemMessage ? systemMessage.content.split('analysis context: ')[1] : null
+    const analysisContext = systemMessage ? JSON.parse(systemMessage.content.split('context: ')[1]) : null
 
     const client = new Cerebras({
       apiKey: CEREBRAS_API_KEY
     })
 
     const chatCompletion = await client.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a legal document analysis assistant. Your responses should be clear, concise, and focused on the legal aspects of the document.'
-        },
-        ...messages.filter((m: any) => m.role !== 'system'),
-        ...(analysisContext ? [{
-          role: 'system',
-          content: `Here is the analysis context for reference: ${analysisContext}`
-        }] : [])
-      ],
+      messages: messages.filter((m: any) => m.role !== 'system'),
       model: 'llama-4-scout-17b-16e-instruct',
       temperature: 0.3,
       max_tokens: 5000

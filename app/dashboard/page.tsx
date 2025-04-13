@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [selectedAnalysis, setSelectedAnalysis] = useState<Analysis | null>(null)
+  const [currentAnalysis, setCurrentAnalysis] = useState<RiskAnalysis[] | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -39,6 +40,11 @@ export default function DashboardPage() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  const handleNewAnalysis = (analysis: RiskAnalysis[]) => {
+    setCurrentAnalysis(analysis)
+    setSelectedAnalysis(null)
+  }
 
   if (loading) {
     return (
@@ -89,40 +95,46 @@ export default function DashboardPage() {
         {/* Main Content */}
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <div className="container mx-auto px-6 py-8">
-            
-            <div className="flex flex-col space-y-8">
-              <div className="flex gap-8">
-                {/* Analysis Results Section */}
-                <div className="flex-1 flex flex-col">
-                  <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Analysis Results</h2>
-                  <div className="bg-white rounded-lg p-6 flex-1 overflow-y-auto scrollbar-hide max-h-[calc(100vh-250px)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {selectedAnalysis ? (
-                      <AnalysisResults analysis={selectedAnalysis.analysis} />
-                    ) : (
-                      <p className="text-gray-500 text-center">Select a document to view its analysis</p>
-                    )}
+            <div className="flex gap-8">
+              {/* Left Column: Analysis Results */}
+              <div className="flex-1">
+                <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>
+                  {selectedAnalysis ? 'Selected Analysis' : currentAnalysis ? 'Current Document Analysis' : 'Analysis Results'}
+                </h2>
+                <div className="bg-white rounded-lg p-6">
+                  {selectedAnalysis ? (
+                    <AnalysisResults analysis={selectedAnalysis.analysis} />
+                  ) : currentAnalysis ? (
+                    <AnalysisResults analysis={currentAnalysis} />
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-gray-500 text-center">No document selected</p>
+                      <p className="text-sm text-gray-400 text-center">
+                        Select a document from the sidebar or upload a new one to view its analysis
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Upload and Chat */}
+              <div className="w-96 space-y-8">
+                {/* Upload Section */}
+                <div>
+                  <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Upload New Document</h2>
+                  <div className="bg-white rounded-lg p-6">
+                    <DocumentUpload onAnalysisComplete={handleNewAnalysis} />
                   </div>
                 </div>
 
-                {/* Right Column */}
-                <div className="w-96 space-y-8">
-                  {/* Upload Section */}
-                  <div>
-                    <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Upload New Document</h2>
-                    <div className="bg-white rounded-lg p-6">
-                      <DocumentUpload />
-                    </div>
-                  </div>
-
-                  {/* Chat Section */}
-                  <div>
-                    <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Chat with Analysis</h2>
-                    <div className="bg-white rounded-lg p-6 h-[400px]">
-                      <ChatInterface 
-                        analysisText={JSON.stringify(selectedAnalysis?.analysis ?? [])} 
-                        documentId={selectedAnalysis?.id ?? ""} 
-                      />
-                    </div>
+                {/* Chat Section */}
+                <div>
+                  <h2 className={`text-2xl font-semibold mb-4 ${domine.className}`}>Chat with Analysis</h2>
+                  <div className="bg-white rounded-lg p-6 h-[400px]">
+                    <ChatInterface 
+                      analysisText={JSON.stringify(selectedAnalysis?.analysis ?? currentAnalysis ?? [])} 
+                      documentId={selectedAnalysis?.id ?? ""} 
+                    />
                   </div>
                 </div>
               </div>

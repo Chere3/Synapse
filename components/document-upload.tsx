@@ -12,7 +12,11 @@ import { Domine } from 'next/font/google'
 
 const domine = Domine({preload: true, subsets: ['latin']})
 
-export default function DocumentUpload() {
+interface DocumentUploadProps {
+  onAnalysisComplete?: (analysis: RiskAnalysis[]) => void
+}
+
+export default function DocumentUpload({ onAnalysisComplete }: DocumentUploadProps) {
   const { supabaseClient, user } = useAuth()
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -133,6 +137,9 @@ export default function DocumentUpload() {
             .eq('id', document.id)
 
           setAnalysisResults(analysis)
+          if (onAnalysisComplete) {
+            onAnalysisComplete(analysis)
+          }
         } catch (error) {
           console.error('Analysis error:', error)
           toast.warning('Document was uploaded but analysis failed')
@@ -152,7 +159,7 @@ export default function DocumentUpload() {
       setCurrentStep('')
       setAnalysisProgress(0)
     }
-  }, [user])
+  }, [user, onAnalysisComplete])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -211,8 +218,6 @@ export default function DocumentUpload() {
           </div>
         )}
       </div>
-
-      {analysisResults && <AnalysisResults analysis={analysisResults} />}
     </div>
   )
 } 
