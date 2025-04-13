@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS public.documents (
     file_url TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'analyzed', 'reviewed')),
     file_type TEXT NOT NULL,
-    file_size INTEGER NOT NULL
+    file_size INTEGER NOT NULL,
+    extracted_text TEXT
 );
 
 -- Enable Row Level Security
