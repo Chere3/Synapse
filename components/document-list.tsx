@@ -16,7 +16,7 @@ export default function DocumentList() {
 
   useEffect(() => {
     async function fetchDocuments() {
-      if (!user) return
+    if (!user) return
 
       try {
         const { data, error } = await supabaseClient
@@ -129,7 +129,7 @@ export default function DocumentList() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handlePreview(document)}
                   className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
@@ -188,7 +188,7 @@ export default function DocumentList() {
                   </a>
                 </div>
               )}
-            </div>
+          </div>
           </div>
         </div>
       )}
