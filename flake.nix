@@ -13,7 +13,7 @@
     {
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
-          packages = with pkgs; [ bun ];
+          packages = with pkgs; [ bun nodejs-slim nodePackages.npm ];
         };
       });
     };
