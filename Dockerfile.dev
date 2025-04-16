@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 3000
 
 # Start the development server with hot reloading and listen on all interfaces
-CMD ["bun", "next", "dev", "--host", "0.0.0.0"]
+CMD ["bun", "next", "dev"]
