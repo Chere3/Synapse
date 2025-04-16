@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "docker compose --profile dev up",
-    "build": "docker compose --profile prod --profile dev build",
-    "start": "docker compose --profile prod up -d",
-    "lint": "docker compose lint"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "@cerebras/cerebras_cloud_sdk": "^1.29.0",
