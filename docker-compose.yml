@@ -32,6 +32,6 @@ services:
       - .env.local
     environment:
       - NODE_ENV=production
-    restart: unless-stopped 
+    restart: unless-stopped
     profiles:
       - prod
