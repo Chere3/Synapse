@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # Development service
+  web-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: legal-analyzer-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    profiles:
+      - dev
+
+  # Production service
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: legal-analyzer-prod
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    profiles:
+      - prod

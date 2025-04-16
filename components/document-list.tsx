@@ -1,13 +1,22 @@
 'use client';
 import { useEffect, useState } from 'react'
 import { useAuth } from './providers/auth-provider'
-import { FileText, Download, Eye } from 'lucide-react'
+import { FileText, Download, Eye, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { Database } from '@/types/supabase'
+import { RiskAnalysis } from '@/utils/analysis'
 
 type Document = Database['public']['Tables']['documents']['Row']
+type Analysis = Database['public']['Tables']['analysis']['Row'] & {
+  analysis: RiskAnalysis[]
+}
 
-export default function DocumentList() {
+interface DocumentListProps {
+  onAnalysisSelect: (analysis: Analysis | null) => void;
+  isCollapsed?: boolean;
+}
+
+export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: DocumentListProps) {
   const { supabaseClient, user } = useAuth()
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
@@ -16,7 +25,7 @@ export default function DocumentList() {
 
   useEffect(() => {
     async function fetchDocuments() {
-    if (!user) return
+      if (!user) return
 
       try {
         const { data, error } = await supabaseClient
@@ -43,11 +52,72 @@ export default function DocumentList() {
     fetchDocuments()
   }, [supabaseClient, user])
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="h-4 w-4 text-yellow-500" />
+      case 'analyzed':
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'reviewed':
+        return <AlertCircle className="h-4 w-4 text-blue-500" />
+      default:
+        return <Clock className="h-4 w-4 text-gray-500" />
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Pending Analysis'
+      case 'analyzed':
+        return 'Analyzed'
+      case 'reviewed':
+        return 'Reviewed'
+      default:
+        return status
+    }
+  }
+
+  const handleDocumentClick = async (document: Document) => {
+    setSelectedDocument(document)
+
+    try {
+      const { data: analysis, error } = await supabaseClient
+        .from('analysis')
+        .select('*')
+        .eq('document_id', document.id)
+        .single()
+
+      if (error) {
+        console.error('Error fetching analysis:', error)
+        toast.error('Failed to fetch analysis')
+        onAnalysisSelect(null)
+        return
+      }
+
+      if (!analysis) {
+        onAnalysisSelect(null)
+        return
+      }
+
+      const typedAnalysis: Analysis = {
+        ...analysis,
+        analysis: analysis.analysis as RiskAnalysis[]
+      }
+
+      onAnalysisSelect(typedAnalysis)
+    } catch (error) {
+      console.error('Error fetching analysis:', error)
+      toast.error('Failed to fetch analysis')
+      onAnalysisSelect(null)
+    }
+  }
+
   const handlePreview = async (document: Document) => {
     try {
       const { data, error } = await supabaseClient.storage
         .from('documents')
-        .createSignedUrl(document.file_path, 3600) // URL expires in 1 hour
+        .createSignedUrl(document.file_path, 3600)
 
       if (error) {
         console.error('Error generating preview URL:', error)
@@ -61,7 +131,6 @@ export default function DocumentList() {
       }
 
       setPreviewUrl(data.signedUrl)
-      setSelectedDocument(document)
     } catch (error) {
       console.error('Error generating preview URL:', error)
       toast.error('Failed to generate preview URL')
@@ -72,7 +141,7 @@ export default function DocumentList() {
     try {
       const { data, error } = await supabaseClient.storage
         .from('documents')
-        .createSignedUrl(doc.file_path, 3600) // URL expires in 1 hour
+        .createSignedUrl(doc.file_path, 3600)
 
       if (error) {
         console.error('Error generating download URL:', error)
@@ -85,7 +154,6 @@ export default function DocumentList() {
         return
       }
 
-      // Create a temporary link and trigger download
       const link = window.document.createElement('a')
       link.href = data.signedUrl
       link.download = doc.title
@@ -107,44 +175,59 @@ export default function DocumentList() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="scrollbar-hide">
       {documents.length === 0 ? (
         <div className="text-center text-gray-500 py-8">
           <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-          <p>No documents uploaded yet</p>
+          <p className={isCollapsed ? 'hidden' : ''}>No documents uploaded yet</p>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {documents.map((document) => (
-            <div
-              key={document.id}
-              className="bg-white rounded-lg shadow p-4 flex items-center justify-between hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center space-x-4">
-                <FileText className="h-6 w-6 text-blue-500" />
-                <div>
-                  <h3 className="font-medium">{document.title}</h3>
-                  <p className="text-sm text-gray-500">
-                    {new Date(document.created_at).toLocaleDateString()}
-                  </p>
+        <div>
+          {documents.map((document, index) => (
+            <div key={document.id}>
+              <div
+                className="bg-white flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer py-3"
+                onClick={() => handleDocumentClick(document)}
+              >
+                <div className="flex items-center space-x-4 min-w-0">
+                  <div className={isCollapsed ? 'hidden' : 'min-w-0 flex-1'}>
+                    <h3 className="font-medium truncate">{document.title}</h3>
+                    <div className="flex items-center space-x-2 text-sm text-gray-500">
+                      {getStatusIcon(document.status)}
+                      <span>{getStatusText(document.status)}</span>
+                      <span>•</span>
+                      <span>{new Date(document.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
                 </div>
+                {!isCollapsed && (
+                  <div className="flex items-center space-x-2 shrink-0">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handlePreview(document)
+                      }}
+                      className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+                      title="Preview"
+                    >
+                      <Eye className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDownload(document)
+                      }}
+                      className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+                      title="Download"
+                    >
+                      <Download className="h-5 w-5" />
+                    </button>
+                  </div>
+                )}
               </div>
-            <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handlePreview(document)}
-                  className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
-                  title="Preview"
-                >
-                  <Eye className="h-5 w-5" />
-                </button>
-                <button
-                  onClick={() => handleDownload(document)}
-                  className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
-                  title="Download"
-                >
-                  <Download className="h-5 w-5" />
-                </button>
-              </div>
+              {index < documents.length - 1 && (
+                <div className="h-px bg-gray-200 opacity-20" />
+              )}
             </div>
           ))}
         </div>
@@ -152,8 +235,8 @@ export default function DocumentList() {
 
       {/* Preview Modal */}
       {selectedDocument && previewUrl && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100]">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-medium">{selectedDocument.title}</h3>
               <button
@@ -188,7 +271,7 @@ export default function DocumentList() {
                   </a>
                 </div>
               )}
-          </div>
+            </div>
           </div>
         </div>
       )}

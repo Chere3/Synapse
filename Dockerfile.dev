@@ -1,0 +1,19 @@
+FROM docker.io/oven/bun:latest
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json bun.lock ./
+
+
+# Install dependencies
+RUN bun install
+
+# Copy the rest of the application
+COPY . .
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Start the development server with hot reloading and listen on all interfaces
+CMD ["bun", "next", "dev"]

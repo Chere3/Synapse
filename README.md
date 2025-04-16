@@ -1,27 +1,30 @@
-# Synapse Legal - Legal Document Analysis Platform
+# Synapse - Legal Document Analysis Platform
 
-A full-stack application for analyzing legal documents using AI-powered analysis through the Cerebras API.
+![Synapse Banner](assets/Banner%20synapse.png)
 
-## Features
+A powerful full-stack application that leverages AI to analyze legal documents through the Cerebras API, providing intelligent insights and document management capabilities.
 
-- User authentication with Supabase
-- Document upload and management
-- AI-powered legal document analysis
-- Real-time status updates
-- Modern and responsive UI
+## 🚀 Features
 
-## Prerequisites
+- 🔐 Secure user authentication with Supabase
+- 📄 Document upload and management system
+- 🤖 AI-powered legal document analysis
+- 🔄 Real-time status updates
+- 🎨 Modern and responsive UI
+- 🔍 Advanced document search capabilities
+
+## 📋 Prerequisites
 
 - Node.js 18+ or Bun
 - Supabase account
 - Cerebras API access
 
-## Setup
+## 🛠️ Setup
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/synapse-legal.git
-cd synapse-legal
+git clone https://github.com/yourusername/synapse.git
+cd synapse
 ```
 
 2. Install dependencies:
@@ -88,7 +91,7 @@ create policy "Users can insert their own analysis"
   with check (auth.uid() = user_id);
 ```
 
-## Running the Application
+## 🚀 Running the Application
 
 1. Start the development server:
 ```bash
@@ -97,7 +100,7 @@ bun run dev
 
 2. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Production Deployment
+## 🏗️ Production Deployment
 
 1. Build the application:
 ```bash
@@ -109,7 +112,9 @@ bun run build
 bun run start
 ```
 
-## Contributing
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -117,6 +122,12 @@ bun run start
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ by Cheree team</sub>
+</div>
