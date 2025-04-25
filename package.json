@@ -11,16 +11,18 @@
   "dependencies": {
     "@cerebras/cerebras_cloud_sdk": "^1.29.0",
     "@napi-rs/canvas": "^0.1.69",
-    "@radix-ui/react-progress": "^1.1.3",
+    "@radix-ui/react-progress": "^1.1.4",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/ssr": "^0.1.0",
     "@supabase/supabase-js": "^2.49.4",
+    "@tailwindcss/postcss": "^4.1.4",
     "@tailwindcss/typography": "^0.5.16",
+    "autoprefixer": "^10.4.21",
     "clsx": "^2.1.1",
     "lucide-react": "^0.330.0",
     "next": "15.3.0",
-    "pdfjs-dist": "3.11.174",
+    "pdfjs-dist": "4.2.67",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-dropzone": "^14.3.8",
@@ -28,16 +30,14 @@
     "react-toastify": "^10.0.6",
     "tailwind-merge": "^3.2.0",
     "tailwindcss": "^4.1.4",
-    "tesseract.js": "^6.0.1",
-    "@tailwindcss/postcss": "^4.1.4",
-    "autoprefixer": "^10.4.21"
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
-    "typescript": "^5.8.3",
-    "@types/node": "^20.17.30",
+    "@types/node": "^20.17.31",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
-    "postcss": "^8.5.3"
+    "postcss": "^8.5.3",
+    "typescript": "^5.8.3"
   },
   "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"
 }
