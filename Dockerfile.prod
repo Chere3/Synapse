@@ -1,37 +1,29 @@
-FROM docker.io/oven/bun:latest as builder
-
+FROM docker.io/node:20-slim as base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
 WORKDIR /app
 
-# Copy package files
-COPY package.json bun.lock ./
+FROM base as prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-COPY .env.local ./
-
-# Install dependencies
-RUN bun install
-
+FROM prod-deps as builder
 # Copy the rest of the application
-COPY . .
-
+COPY --from=prod-deps /app/node_modules ./node_modules
 # Build the application
-RUN bun run next build
+RUN pnpm run build
 
-# Production stage
-FROM docker.io/oven/bun:latest
-
-WORKDIR /app
-
-# Copy built assets from builder
+FROM base as runner
+# Copy built assets and dependencies
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/bun.lock ./bun.lock
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder /app/next.config.ts ./next.config.ts
-
-# Install production dependencies
-RUN bun install --frozen-lockfile --production
+COPY --from=prod-deps /app/node_modules ./node_modules
 
 # Expose the port the app runs on
 EXPOSE 3000
 
 # Start the application
-CMD ["bun", "start"] 
+CMD ["pnpm", "next", "start"] 
