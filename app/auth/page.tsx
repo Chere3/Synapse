@@ -35,27 +35,27 @@ export default function AuthPage() {
 
   if (!mounted || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-orange-500" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
-          <div className="text-red-500 text-center">{error}</div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-lg">
+          <div className="text-center text-red-500">{error}</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Left side - Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8">
-        <div className="max-w-md w-full space-y-8">
+      <div className="flex w-full items-center justify-center p-8 md:w-1/2">
+        <div className="w-full max-w-md space-y-8">
           <div>
             <h2 className={`mt-6 text-3xl font-extrabold text-gray-900 ${domine.className}`}>
               Welcome to Synapse
@@ -79,7 +79,7 @@ export default function AuthPage() {
                 },
               }}
               providers={['google']}
-              redirectTo={`${window.location.origin}/auth/callback`}
+              redirectTo={`${globalThis.location.origin}/auth/callback`}
               theme="light"
             />
           </div>
@@ -87,8 +87,8 @@ export default function AuthPage() {
       </div>
 
       {/* Right side - Image */}
-      <div className="hidden md:flex w-1/2 bg-orange-500 items-center justify-center">
-        <div className="w-full h-full bg-[url('/images/auth-bg.jpg')] bg-cover bg-center opacity-90"></div>
+      <div className="hidden w-1/2 items-center justify-center bg-orange-500 md:flex">
+        <div className="h-full w-full bg-[url('/images/auth-bg.jpg')] bg-cover bg-center opacity-90"></div>
       </div>
     </div>
   )
