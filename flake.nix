@@ -13,7 +13,11 @@
     {
       devShells = forEachSupportedSystem ({ pkgs }: {
         default = pkgs.mkShell {
+<<<<<<< HEAD
           packages = with pkgs; [ bun nodejs-slim nodePackages.npm ];
+=======
+          packages = with pkgs; [ nodejs-slim nodePackages.pnpm ];
+>>>>>>> dev
         };
       });
     };

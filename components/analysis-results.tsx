@@ -11,46 +11,58 @@ interface AnalysisResultsProps {
 
 const getRiskColor = (riskLevel: number) => {
   switch (riskLevel) {
-    case 1:
+    case 1: {
       return 'text-green-600'
-    case 2:
+    }
+    case 2: {
       return 'text-green-500'
-    case 3:
+    }
+    case 3: {
       return 'text-yellow-500'
-    case 4:
+    }
+    case 4: {
       return 'text-orange-600'
-    case 5:
+    }
+    case 5: {
       return 'text-red-700'
-    default:
+    }
+    default: {
       return 'text-gray-600'
+    }
   }
 }
 
 const getRiskLabel = (riskLevel: number) => {
   switch (riskLevel) {
-    case 1:
+    case 1: {
       return 'Minimal Risk'
-    case 2:
+    }
+    case 2: {
       return 'Low Risk'
-    case 3:
+    }
+    case 3: {
       return 'Moderate Risk'
-    case 4:
+    }
+    case 4: {
       return 'High Risk'
-    case 5:
+    }
+    case 5: {
       return 'Critical Risk'
-    default:
+    }
+    default: {
       return 'Unknown Risk'
+    }
   }
 }
 
 export default function AnalysisResults({ analysis }: AnalysisResultsProps) {
   return (
-    <div className="bg-white rounded-lg p-6">
-      <div className="max-h-[calc(100vh-300px)] overflow-y-auto scrollbar-hide space-y-4">
+    <div className="rounded-lg bg-white p-6">
+      <div className="scrollbar-hide max-h-[calc(100vh-300px)] space-y-4 overflow-y-auto">
         {analysis.map((item, index) => (
           <div
             key={index}
-            className="bg-gray-50 rounded-lg p-4 space-y-2"
+            className="space-y-2 rounded-lg bg-gray-50 p-4"
           >
             <div className="flex items-center justify-between">
               <span className={`text-2xl font-medium ${getRiskColor(item.riskLevel)} ${domine.className} `}>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Message } from '@/types/chat'
 
@@ -22,6 +22,17 @@ export default function ChatInterface({ documentId, analysisText }: ChatInterfac
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  const saveChat = useCallback((updatedMessages: Message[]) => {
+    const storedChats = localStorage.getItem('chats')
+    const chats = storedChats ? JSON.parse(storedChats) : {}
+    chats[documentId] = {
+      id: documentId,
+      messages: updatedMessages,
+      createdAt: new Date().toISOString()
+    }
+    localStorage.setItem('chats', JSON.stringify(chats))
+  }, [documentId])
 
   useEffect(() => {
     // Load chat from localStorage or initialize with analysis context
@@ -46,18 +57,7 @@ export default function ChatInterface({ documentId, analysisText }: ChatInterfac
     }
 
     loadChat()
-  }, [documentId, analysisText])
-
-  const saveChat = (updatedMessages: Message[]) => {
-    const storedChats = localStorage.getItem('chats')
-    const chats = storedChats ? JSON.parse(storedChats) : {}
-    chats[documentId] = {
-      id: documentId,
-      messages: updatedMessages,
-      createdAt: new Date().toISOString()
-    }
-    localStorage.setItem('chats', JSON.stringify(chats))
-  }
+  }, [documentId, analysisText, saveChat])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,11 +92,11 @@ export default function ChatInterface({ documentId, analysisText }: ChatInterfac
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {messages.filter(m => m.role !== 'system').length === 0 && (
-        <p className="text-xs text-gray-400 p-2 text-center">Messages are saved in your device</p>
+        <p className="p-2 text-center text-xs text-gray-400">Messages are saved in your device</p>
       )}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 space-y-4 overflow-y-auto p-4">
         {messages
           .filter(m => m.role !== 'system')
           .map((message, index) => (
@@ -123,20 +123,20 @@ export default function ChatInterface({ documentId, analysisText }: ChatInterfac
           ))}
         <div ref={messagesEndRef} />
       </div>
-      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-100">
+      <form onSubmit={handleSubmit} className="border-t border-gray-100 p-4">
         <div className="flex space-x-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-gray-50"
+            className="flex-1 rounded-lg bg-gray-50 p-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50"
+            className="rounded-lg bg-orange-500 px-4 py-2 text-white hover:bg-orange-600 disabled:opacity-50"
           >
             {isLoading ? 'Sending...' : 'Send'}
           </button>
