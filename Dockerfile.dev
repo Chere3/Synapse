@@ -1,13 +1,16 @@
-FROM docker.io/oven/bun:latest
+FROM docker.io/node:20-slim
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lock ./
+COPY package.json pnpm-lock.yaml ./
 
 
 # Install dependencies
-RUN bun install
+RUN pnpm install
 
 # Copy the rest of the application
 COPY . .
@@ -16,4 +19,4 @@ COPY . .
 EXPOSE 3000
 
 # Start the development server with hot reloading and listen on all interfaces
-CMD ["bun", "next", "dev"]
+CMD ["pnpm", "run", "dev"]

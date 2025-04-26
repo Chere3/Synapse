@@ -16,6 +16,23 @@ interface DocumentListProps {
   isCollapsed?: boolean;
 }
 
+const getStatusText = (status: string) => {
+  switch (status) {
+    case 'pending': {
+      return 'Pending Analysis'
+    }
+    case 'analyzed': {
+      return 'Analyzed'
+    }
+    case 'reviewed': {
+      return 'Reviewed'
+    }
+    default: {
+      return status
+    }
+  }
+}
+
 export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: DocumentListProps) {
   const { supabaseClient, user } = useAuth()
   const [documents, setDocuments] = useState<Document[]>([])
@@ -54,27 +71,18 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending':
+      case 'pending': {
         return <Clock className="h-4 w-4 text-yellow-500" />
-      case 'analyzed':
+      }
+      case 'analyzed': {
         return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'reviewed':
+      }
+      case 'reviewed': {
         return <AlertCircle className="h-4 w-4 text-blue-500" />
-      default:
+      }
+      default: {
         return <Clock className="h-4 w-4 text-gray-500" />
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Pending Analysis'
-      case 'analyzed':
-        return 'Analyzed'
-      case 'reviewed':
-        return 'Reviewed'
-      default:
-        return status
+      }
     }
   }
 
@@ -154,12 +162,12 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
         return
       }
 
-      const link = window.document.createElement('a')
+      const link = globalThis.document.createElement('a')
       link.href = data.signedUrl
       link.download = doc.title
-      window.document.body.appendChild(link)
+      globalThis.document.body.append(link)
       link.click()
-      window.document.body.removeChild(link)
+      link.remove()
     } catch (error) {
       console.error('Error downloading document:', error)
       toast.error('Failed to download document')
@@ -168,8 +176,8 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-32">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      <div className="flex h-32 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-500" />
       </div>
     )
   }
@@ -177,8 +185,8 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
   return (
     <div className="scrollbar-hide">
       {documents.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">
-          <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+        <div className="py-8 text-center text-gray-500">
+          <FileText className="mx-auto mb-4 h-12 w-12 text-gray-400" />
           <p className={isCollapsed ? 'hidden' : ''}>No documents uploaded yet</p>
         </div>
       ) : (
@@ -186,12 +194,12 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
           {documents.map((document, index) => (
             <div key={document.id}>
               <div
-                className="bg-white flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer py-3"
+                className="flex cursor-pointer items-center justify-between bg-white py-3 transition-colors hover:bg-gray-50"
                 onClick={() => handleDocumentClick(document)}
               >
-                <div className="flex items-center space-x-4 min-w-0">
+                <div className="flex min-w-0 items-center space-x-4">
                   <div className={isCollapsed ? 'hidden' : 'min-w-0 flex-1'}>
-                    <h3 className="font-medium truncate">{document.title}</h3>
+                    <h3 className="truncate font-medium">{document.title}</h3>
                     <div className="flex items-center space-x-2 text-sm text-gray-500">
                       {getStatusIcon(document.status)}
                       <span>{getStatusText(document.status)}</span>
@@ -201,13 +209,13 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
                   </div>
                 </div>
                 {!isCollapsed && (
-                  <div className="flex items-center space-x-2 shrink-0">
+                  <div className="flex shrink-0 items-center space-x-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         handlePreview(document)
                       }}
-                      className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+                      className="p-2 text-gray-500 transition-colors hover:text-blue-500"
                       title="Preview"
                     >
                       <Eye className="h-5 w-5" />
@@ -217,7 +225,7 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
                         e.stopPropagation()
                         handleDownload(document)
                       }}
-                      className="p-2 text-gray-500 hover:text-blue-500 transition-colors"
+                      className="p-2 text-gray-500 transition-colors hover:text-blue-500"
                       title="Download"
                     >
                       <Download className="h-5 w-5" />
@@ -235,9 +243,9 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
 
       {/* Preview Modal */}
       {selectedDocument && previewUrl && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100]">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-lg bg-white">
+            <div className="flex items-center justify-between border-b p-4">
               <h3 className="text-lg font-medium">{selectedDocument.title}</h3>
               <button
                 onClick={() => {
@@ -253,12 +261,12 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
               {selectedDocument.file_type === 'application/pdf' ? (
                 <iframe
                   src={previewUrl}
-                  className="w-full h-full min-h-[60vh]"
+                  className="h-full min-h-[60vh] w-full"
                   title={selectedDocument.title}
                 />
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">
+                <div className="py-8 text-center">
+                  <p className="mb-4 text-gray-500">
                     Preview not available for this file type
                   </p>
                   <a

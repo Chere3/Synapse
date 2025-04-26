@@ -44,7 +44,7 @@ export default function DocumentUpload({ onAnalysisComplete }: DocumentUploadPro
 
       // Generate a unique file path
       const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 15)}`
       const filePath = `${user.id}/${fileName}.${fileExt}`
 
       // Upload file to storage
@@ -159,7 +159,7 @@ export default function DocumentUpload({ onAnalysisComplete }: DocumentUploadPro
       setCurrentStep('')
       setAnalysisProgress(0)
     }
-  }, [user, onAnalysisComplete])
+  }, [user, onAnalysisComplete, supabaseClient])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -184,10 +184,10 @@ export default function DocumentUpload({ onAnalysisComplete }: DocumentUploadPro
   })
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8">
+    <div className="mx-auto w-full max-w-4xl space-y-8">
       <div
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
+        className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors
           ${isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}`}
       >
         <input {...getInputProps()} />
@@ -212,7 +212,7 @@ export default function DocumentUpload({ onAnalysisComplete }: DocumentUploadPro
             <p className="text-lg font-medium text-gray-700">
               {isDragActive ? 'Drop the file here' : 'Drag and drop a document here, or click to select'}
             </p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="mt-2 text-sm text-gray-500">
               Supported formats: PDF, TXT, DOC, DOCX (max 5MB)
             </p>
           </div>
