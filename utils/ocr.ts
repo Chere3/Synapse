@@ -10,7 +10,7 @@ if (typeof window !== 'undefined') {
 
 type ProgressCallback = (step: string, progress: number, total: number) => void
 
-async function convertPdfToImages(
+export async function convertPdfToImages(
   pdfBytes: Uint8Array,
   onProgress?: ProgressCallback
 ): Promise<HTMLCanvasElement[]> {
@@ -96,6 +96,9 @@ export async function extractTextFromFile(
     return extractedText.trim()
   } catch (error) {
     console.error('Error in OCR processing:', error)
+    if (error instanceof Error) {
+      throw error
+    }
     throw new Error('Failed to extract text from document')
   }
 } 
