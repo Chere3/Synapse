@@ -1,132 +1,157 @@
-# Synapse - Legal Document Analysis Platform
+# Synapse — AI Contract Analysis Platform
 
 ![Synapse Banner](assets/banner-readme.png)
 
-A powerful full-stack application that leverages AI to analyze legal documents through the Cerebras API, providing intelligent insights and document management capabilities.
+Synapse is a full-stack legal-tech app that helps teams analyze contracts faster with AI. Upload a document, extract key clauses, score risk levels, and get actionable explanations in a modern Material Design 3 interface.
 
-## 🚀 Features
+## Why Synapse
 
-- 🔐 Secure user authentication with Supabase
-- 📄 Document upload and management system
-- 🤖 AI-powered legal document analysis
-- 🔄 Real-time status updates
-- 🎨 Modern and responsive UI
-- 🔍 Advanced document search capabilities
+- **Faster legal review** with AI-assisted analysis
+- **Clause-level risk scoring** with clear explanations
+- **Document + chat workflow** in one place
+- **Secure auth and data isolation** with Supabase RLS
+- **Premium UX** built with Next.js, React, TypeScript, and Tailwind
 
-## 📋 Prerequisites
+---
 
-- Node.js 18+ or Bun
-- Supabase account
-- Cerebras API access
+## Tech Stack
 
-## 🛠️ Setup
+- **Framework:** Next.js 16 (App Router), React 19, TypeScript
+- **Styling:** Tailwind CSS + Material Design 3 token system
+- **Auth & DB:** Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
+- **AI:** Cerebras Cloud SDK
+- **Document parsing / OCR:** `pdfjs-dist`, `tesseract.js`
+- **UI libs:** `lucide-react`, Radix Progress, `react-toastify`
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/synapse.git
-cd synapse
+---
+
+## Project Structure
+
+```text
+app/
+  api/
+    analyze/route.ts      # contract analysis endpoint
+    chat/route.ts         # chat endpoint
+  auth/
+    page.tsx              # auth screen
+    callback/route.ts     # auth callback
+  dashboard/page.tsx      # main app dashboard
+  page.tsx                # marketing landing page
+  globals.css             # global styles + M3 tokens
+
+components/
+  analysis-results.tsx
+  chat-interface.tsx
+  document-list.tsx
+  document-upload.tsx
+  hero-demo-mockup.tsx
+  auth-redirect.tsx
+
+supabase/
+  migrations/             # DB schema and storage setup
 ```
 
-2. Install dependencies:
+---
+
+## Getting Started
+
+### 1) Prerequisites
+
+- Node.js **22+** recommended
+- `pnpm` (project uses `pnpm@10` lockfile)
+- Supabase project
+- Cerebras API key
+
+### 2) Clone
+
 ```bash
-bun install
+git clone https://github.com/Chere3/Synapse.git
+cd Synapse
 ```
 
-3. Create a `.env.local` file in the root directory with the following variables:
+### 3) Install dependencies
+
+```bash
+pnpm install
+```
+
+### 4) Configure environment
+
+Copy the example file and fill values:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Required vars:
+
 ```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+# Supabase (required)
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
-# Cerebras API Configuration (server-only)
-CEREBRAS_API_KEY=your-cerebras-api-key
+# Cerebras (required, server-side only)
+CEREBRAS_API_KEY=
 
-# Site URL (for auth redirects)
+# Optional app URL
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-4. Set up your Supabase database with the following tables:
+### 5) Run database migrations
 
-```sql
--- Documents table
-create table documents (
-  id uuid default uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  user_id uuid references auth.users not null,
-  title text not null,
-  content text not null,
-  status text not null default 'pending'
-);
+Use your preferred Supabase workflow to apply files in `supabase/migrations`:
 
--- Analysis table
-create table analysis (
-  id uuid default uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  document_id uuid references documents not null,
-  user_id uuid references auth.users not null,
-  analysis jsonb not null,
-  status text not null default 'pending'
-);
+- `20240101000000_create_documents.sql`
+- `20240101000001_create_storage.sql`
+- `20240101000002_add_extracted_text.sql`
+- `20240101000003_create_analysis.sql`
 
--- Set up Row Level Security (RLS)
-alter table documents enable row level security;
-alter table analysis enable row level security;
+---
 
--- Create policies
-create policy "Users can view their own documents"
-  on documents for select
-  using (auth.uid() = user_id);
+## Local Development
 
-create policy "Users can insert their own documents"
-  on documents for insert
-  with check (auth.uid() = user_id);
-
-create policy "Users can view their own analysis"
-  on analysis for select
-  using (auth.uid() = user_id);
-
-create policy "Users can insert their own analysis"
-  on analysis for insert
-  with check (auth.uid() = user_id);
-```
-
-## 🚀 Running the Application
-
-1. Start the development server:
 ```bash
-bun run dev
+pnpm dev
 ```
 
-2. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open: <http://localhost:3000>
 
-## 🏗️ Production Deployment
+---
 
-1. Build the application:
+## Scripts
+
 ```bash
-bun run build
+pnpm dev      # start dev server
+pnpm build    # production build
+pnpm start    # start production server
+pnpm lint     # lint project
 ```
 
-2. Start the production server:
-```bash
-bun run start
-```
+---
 
-## 🤝 Contributing
+## Deployment Notes
 
-We welcome contributions! Here's how you can help:
+- Set all environment variables in your hosting platform.
+- Ensure Supabase auth callback URLs include your deployed domain.
+- Run `pnpm build` in CI before deployment.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+---
 
-## 📄 License
+## Contributing
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+1. Create a feature branch
+2. Make focused changes
+3. Run checks (`pnpm lint`, `pnpm build`)
+4. Open a pull request with clear verification steps
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ by Cheree team</sub>
+  <sub>Built by Cheree Team</sub>
 </div>
