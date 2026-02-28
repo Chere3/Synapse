@@ -9,6 +9,7 @@ import ChatInterface from '@/components/chat-interface'
 import { RiskAnalysis } from '@/utils/analysis'
 import { Database } from '@/types/supabase'
 import { ChevronLeft, ChevronRight, LogOut, FileText, User, Sparkles, MessageSquare, Download, Share2, X } from 'lucide-react'
+import DocumentPreviewWithAnnotations from '@/components/document-preview-with-annotations'
 
 // ─────────────────────────────────────────────────────────
 // Types
@@ -487,15 +488,11 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Clause breakdown — identical structure, real clauses */}
-                    <p className="mb-3 text-label-sm font-semibold uppercase tracking-wider text-md-on-surface-variant">
-                      Clause-by-Clause Breakdown
-                    </p>
-                    <div className="space-y-3.5 max-h-96 overflow-y-auto scrollbar-hide pr-1">
-                      {activeAnalysis!.map((item, i) => (
-                        <ClauseRow key={item.clause + i} item={item} index={i} />
-                      ))}
-                    </div>
+                    {/* Document preview with GitHub-style risk annotations */}
+                    <DocumentPreviewWithAnnotations
+                      analysis={activeAnalysis!}
+                      documentTitle={docTitle}
+                    />
 
                     {/* Action buttons — identical structure, real actions */}
                     <div className="mt-5 flex flex-wrap gap-2">
