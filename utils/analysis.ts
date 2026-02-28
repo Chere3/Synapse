@@ -10,21 +10,37 @@ export function normalizeAnalysisPayload(payload: unknown): RiskAnalysis[] {
   const arrayPayload = extractArray(payload)
 
   return arrayPayload
-    .map((item) => {
-      if (!item || typeof item !== 'object') return null
-      const clause = String((item as any).clause ?? '').trim()
-      const explanation = String((item as any).explanation ?? '').trim()
-      const risk = Number((item as any).riskLevel)
-
-      if (!clause || !explanation || Number.isNaN(risk)) return null
-
-      return {
-        clause,
-        explanation,
-        riskLevel: Math.min(5, Math.max(1, Math.round(risk))) as RiskLevel,
-      }
-    })
+    .map(toRiskAnalysis)
     .filter((item): item is RiskAnalysis => item !== null)
+}
+
+function toRiskAnalysis(item: unknown): RiskAnalysis | null {
+  if (!item || typeof item !== 'object') return null
+
+  const input = item as Record<string, unknown>
+  const clause = asNonEmptyString(input.clause)
+  const explanation = asNonEmptyString(input.explanation)
+  const riskLevel = asRiskLevel(input.riskLevel)
+
+  if (!clause || !explanation || riskLevel === null) return null
+
+  return {
+    clause,
+    explanation,
+    riskLevel,
+  }
+}
+
+function asNonEmptyString(value: unknown): string | null {
+  const normalized = String(value ?? '').trim()
+  return normalized.length > 0 ? normalized : null
+}
+
+function asRiskLevel(value: unknown): RiskLevel | null {
+  const parsed = Number(value)
+  if (Number.isNaN(parsed)) return null
+
+  return Math.min(5, Math.max(1, Math.round(parsed))) as RiskLevel
 }
 
 function extractArray(payload: unknown): unknown[] {

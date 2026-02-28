@@ -1,9 +1,11 @@
 # Synapse Roadmap (Execution-First)
 
 ## Project Goal
+
 Convert Synapse into a **portfolio-grade, production-ready legal analysis platform** that proves real-world engineering capability (security, architecture, reliability, and delivery discipline).
 
 ## Success Criteria (Definition of Done)
+
 - ✅ Secure architecture (no client-exposed secrets, robust auth/session flow)
 - ✅ Stable CI build + lint + type checks
 - ✅ End-to-end demo flow works reliably (auth → upload → OCR → analysis → chat)
@@ -13,9 +15,11 @@ Convert Synapse into a **portfolio-grade, production-ready legal analysis platfo
 ---
 
 ## Phase 0 — Technical Hardening (Week 1)
+
 **Objective:** Remove critical risks and make the app consistently build/run.
 
-### Scope
+### Phase 0 Scope
+
 1. **Secrets & Security**
    - Remove usage of `NEXT_PUBLIC_CEREBRAS_API_KEY`
    - Enforce server-only `CEREBRAS_API_KEY`
@@ -37,21 +41,25 @@ Convert Synapse into a **portfolio-grade, production-ready legal analysis platfo
    - Fix analysis response format contract (array/object mismatch)
    - Add defensive parse + validation + fallback error messaging
 
-### Deliverables
+### Phase 0 Deliverables
+
 - Hardened code merged in `main`
 - Build passes: `pnpm lint && pnpm build`
 - Security notes documented in `ARCHITECTURE.md`
 
-### Exit Gate
+### Phase 0 Exit Gate
+
 - No exposed API keys
 - No build-time crashes in default path
 
 ---
 
 ## Phase 1 — Product Reliability (Week 2)
+
 **Objective:** Make user workflows dependable and observable.
 
-### Scope
+### Phase 1 Scope
+
 1. **Document Pipeline Reliability**
    - Retry strategy for OCR/analysis failures
    - Status transitions: `pending -> processing -> analyzed/failed`
@@ -69,21 +77,25 @@ Convert Synapse into a **portfolio-grade, production-ready legal analysis platfo
    - Replace brittle context transport with structured payloads
    - Prevent malformed system-context parsing
 
-### Deliverables
+### Phase 1 Deliverables
+
 - Reliable pipeline with explicit states
 - Improved UX around failures/retries
 - API guardrails documented
 
-### Exit Gate
+### Phase 1 Exit Gate
+
 - Reproducible upload/analyze success on test set
 - Controlled failure behavior (no silent breaks)
 
 ---
 
 ## Phase 2 — Engineering Quality (Week 3)
+
 **Objective:** Demonstrate senior-level engineering discipline.
 
-### Scope
+### Phase 2 Scope
+
 1. **Testing Baseline**
    - Unit tests for analysis parsing/validation
    - Integration tests for core API routes
@@ -101,21 +113,25 @@ Convert Synapse into a **portfolio-grade, production-ready legal analysis platfo
    - Measure large document processing time
    - Define practical limits and timeout behavior
 
-### Deliverables
+### Phase 2 Deliverables
+
 - CI pipeline with required checks
 - Test suite + coverage baseline
 - Logs/error strategy documented
 
-### Exit Gate
+### Phase 2 Exit Gate
+
 - Green CI on PRs
 - Core paths covered by automated checks
 
 ---
 
 ## Phase 3 — Portfolio Packaging (Week 4)
+
 **Objective:** Turn work into undeniable proof of competence.
 
-### Scope
+### Phase 3 Scope
+
 1. **Documentation Upgrade**
    - `README.md` (problem, architecture, setup, trade-offs)
    - `ARCHITECTURE.md` (components, data flow, security model)
@@ -130,46 +146,58 @@ Convert Synapse into a **portfolio-grade, production-ready legal analysis platfo
    - Curated issues/PRs showing decision quality
    - One technical writeup: “How we hardened Synapse for production”
 
-### Deliverables
+### Phase 3 Deliverables
+
 - Complete portfolio package
 - Recruiter/interviewer-friendly proof artifacts
 
-### Exit Gate
+### Phase 3 Exit Gate
+
 - New contributor can run project from docs only
 - Project presents as production-grade, not hackathon-grade
 
 ---
 
 ## Risk Register (Initial)
+
 1. **API key leakage risk** — High
    - Mitigation: server-only secrets, audit env exposure
+
 2. **Build fragility from env assumptions** — High
    - Mitigation: runtime env guards + safer init boundaries
+
 3. **OCR/AI latency and failures** — Medium
    - Mitigation: retry, status tracking, timeout policies
+
 4. **Schema drift** — Medium
    - Mitigation: type generation strategy + migration discipline
+
 5. **Scope creep** — Medium
    - Mitigation: phase gates + change control rules
 
 ---
 
 ## Project Control Model
+
 - **Cadence:**
   - Daily: async status update (Done / Next / Risks)
   - Weekly: milestone review and scope check
+
 - **Change Control:**
   - Any non-trivial feature enters backlog first
   - Must include effort estimate + impact + priority
+
 - **Definition of Ready (DoR):**
   - Clear acceptance criteria
   - Dependencies identified
+
 - **Definition of Done (DoD):**
   - Code + tests + docs + passing CI
 
 ---
 
 ## Immediate Action Plan (Next 48h)
+
 1. Implement Phase 0 security/build fixes
 2. Add env template + env validation
 3. Patch auth sign-out and context handling
@@ -179,6 +207,7 @@ Convert Synapse into a **portfolio-grade, production-ready legal analysis platfo
 ---
 
 ## Backlog Snapshot (Prioritized)
+
 - P0: Remove `NEXT_PUBLIC_CEREBRAS_API_KEY` path
 - P0: Fix build crash from Supabase env/prerender assumptions
 - P0: Align analysis response format + parsing
@@ -191,4 +220,5 @@ Convert Synapse into a **portfolio-grade, production-ready legal analysis platfo
 ---
 
 ## Notes
+
 This roadmap is intentionally execution-driven: each phase produces visible, reviewable proof of engineering maturity.
