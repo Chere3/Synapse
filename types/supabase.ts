@@ -20,6 +20,7 @@ export interface Database {
           status: 'pending' | 'analyzed' | 'reviewed'
           file_type: string
           file_size: number
+          extracted_text: string | null
         }
         Insert: {
           id?: string
@@ -31,6 +32,7 @@ export interface Database {
           status?: 'pending' | 'analyzed' | 'reviewed'
           file_type: string
           file_size: number
+          extracted_text?: string | null
         }
         Update: {
           id?: string
@@ -42,6 +44,7 @@ export interface Database {
           status?: 'pending' | 'analyzed' | 'reviewed'
           file_type?: string
           file_size?: number
+          extracted_text?: string | null
         }
       }
       analysis: {

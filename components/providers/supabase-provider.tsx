@@ -3,12 +3,11 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { Database } from '@/types/supabase'
 import { AuthProvider } from './auth-provider'
+import { getSupabasePublicEnv } from '@/utils/env'
 
 export function SupabaseProvider({ children }: { children: React.ReactNode }) {
-  const supabase = createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const { url, anonKey } = getSupabasePublicEnv()
+  const supabase = createBrowserClient<Database>(url, anonKey)
 
   return <AuthProvider supabaseClient={supabase}>{children}</AuthProvider>
-} 
+}

@@ -1,32 +1,10 @@
-import {FlatCompat} from "@eslint/eslintrc"
-import unicorn from "eslint-plugin-unicorn"
+import nextVitals from 'eslint-config-next/core-web-vitals'
 
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-})
-
-const config = [
-  ...compat.config({
-    extends: ["next/core-web-vitals", "plugin:tailwindcss/recommended"],
-    rules: {
-      "@next/next/no-html-link-for-pages": "off",
-      "tailwindcss/no-custom-classname": "off",
-    },
-  }),
-  unicorn.configs["recommended"],
+const eslintConfig = [
+  ...nextVitals,
   {
-    rules: {
-      "unicorn/prevent-abbreviations": "off",
-      "unicorn/no-null": "off",
-      "unicorn/filename-case": ["error", {
-        "cases": {
-          "camelCase": true,
-          "pascalCase": true,
-          "kebabCase": true
-        }
-      }]
-    },
-  }
+    ignores: ['.next/**', 'node_modules/**'],
+  },
 ]
 
-export default config
+export default eslintConfig

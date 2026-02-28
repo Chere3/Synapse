@@ -38,9 +38,8 @@ bun install
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
-# Cerebras API Configuration
+# Cerebras API Configuration (server-only)
 CEREBRAS_API_KEY=your-cerebras-api-key
-CEREBRAS_API_URL=https://api.cerebras.com/v1
 
 # Site URL (for auth redirects)
 NEXT_PUBLIC_SITE_URL=http://localhost:3000

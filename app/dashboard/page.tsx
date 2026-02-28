@@ -19,7 +19,7 @@ type Analysis = Database['public']['Tables']['analysis']['Row'] & {
 }
 
 export default function DashboardPage() {
-  const { user, loading } = useAuth()
+  const { user, loading, supabaseClient } = useAuth()
   const router = useRouter()
   const [selectedAnalysis, setSelectedAnalysis] = useState<Analysis | null>(null)
   const [currentAnalysis, setCurrentAnalysis] = useState<RiskAnalysis[] | null>(null)
@@ -63,7 +63,10 @@ export default function DashboardPage() {
             <div className="flex items-center space-x-4">
               <span className="text-gray-600">Welcome, {user?.email}</span>
               <button
-                onClick={() => router.push('/auth')}
+                onClick={async () => {
+                  await supabaseClient.auth.signOut()
+                  router.push('/auth')
+                }}
                 className="text-orange-500 hover:text-orange-400"
               >
                 Sign Out
