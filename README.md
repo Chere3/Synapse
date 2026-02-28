@@ -1,5 +1,3 @@
-# Synapse
-
 <div align="center">
 
 ![Synapse Banner](assets/banner-readme.png)
