@@ -81,14 +81,21 @@ function ClauseRow({ item, index }: { item: RiskAnalysis; index: number }) {
       style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(8px)' }}
     >
       <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${cfg.dot}`} aria-hidden="true" />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-2">
-          <span className="truncate text-label-md text-md-on-surface">{item.clause}</span>
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex items-start justify-between gap-2">
+          <p
+            className="text-body-sm text-md-on-surface leading-relaxed [overflow-wrap:anywhere]"
+            title={item.clause}
+          >
+            {item.clause}
+          </p>
           <span className={`shrink-0 rounded-md-full px-2 py-0.5 text-label-sm font-medium ${cfg.badge}`}>
             {cfg.label}
           </span>
         </div>
-        <p className="mt-0.5 text-body-sm text-md-on-surface-variant">{item.explanation}</p>
+        <p className="text-body-sm text-md-on-surface-variant leading-relaxed [overflow-wrap:anywhere]">
+          {item.explanation}
+        </p>
         <RiskBar value={cfg.barPct} colorClass={cfg.bar} />
       </div>
     </div>
