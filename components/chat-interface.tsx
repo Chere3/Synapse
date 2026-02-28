@@ -29,35 +29,24 @@ export default function ChatInterface({ documentId, analysisText }: ChatInterfac
     chats[documentId] = {
       id: documentId,
       messages: updatedMessages,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     }
     localStorage.setItem('chats', JSON.stringify(chats))
   }, [documentId])
 
   useEffect(() => {
-    // Load chat from localStorage or initialize with analysis context
-    const loadChat = () => {
-      const storedChats = localStorage.getItem('chats')
-      const chats = storedChats ? JSON.parse(storedChats) : {}
-      const chat = chats[documentId]
+    const storedChats = localStorage.getItem('chats')
+    const chats = storedChats ? JSON.parse(storedChats) : {}
+    const chat = chats[documentId]
 
-      if (chat) {
-        setMessages(chat.messages)
-      } else {
-        // Initialize with analysis context as a system message
-        const initialMessages: Message[] = [
-          {
-            role: 'system',
-            content: `You are a legal document analysis assistant. Here is the analysis context: ${analysisText}`
-          }
-        ]
-        setMessages(initialMessages)
-        saveChat(initialMessages)
-      }
+    if (chat?.messages) {
+      setMessages(chat.messages)
+      return
     }
 
-    loadChat()
-  }, [documentId, analysisText, saveChat])
+    setMessages([])
+    saveChat([])
+  }, [documentId, saveChat])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,7 +62,7 @@ export default function ChatInterface({ documentId, analysisText }: ChatInterfac
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updatedMessages, documentId })
+        body: JSON.stringify({ messages: updatedMessages, analysisText, documentId }),
       })
 
       if (!response.ok) throw new Error('Failed to get response')
@@ -85,7 +74,6 @@ export default function ChatInterface({ documentId, analysisText }: ChatInterfac
       saveChat(finalMessages)
     } catch (error) {
       console.error('Error:', error)
-      // Optionally show error message to user
     } finally {
       setIsLoading(false)
     }
@@ -93,34 +81,26 @@ export default function ChatInterface({ documentId, analysisText }: ChatInterfac
 
   return (
     <div className="flex h-full flex-col">
-      {messages.filter(m => m.role !== 'system').length === 0 && (
+      {messages.length === 0 && (
         <p className="p-2 text-center text-xs text-gray-400">Messages are saved in your device</p>
       )}
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
-        {messages
-          .filter(m => m.role !== 'system')
-          .map((message, index) => (
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
             <div
-              key={index}
-              className={`flex ${
-                message.role === 'user' ? 'justify-end' : 'justify-start'
+              className={`max-w-[80%] rounded-lg p-4 ${
+                message.role === 'user' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-800'
               }`}
             >
-              <div
-                className={`max-w-[80%] rounded-lg p-4 ${
-                  message.role === 'user'
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                <div className="prose prose-sm max-w-none">
-                  <ReactMarkdown>
-                    {message.content}
-                  </ReactMarkdown>
-                </div>
+              <div className="prose prose-sm max-w-none">
+                <ReactMarkdown>{message.content}</ReactMarkdown>
               </div>
             </div>
-          ))}
+          </div>
+        ))}
         <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSubmit} className="border-t border-gray-100 p-4">
@@ -144,4 +124,4 @@ export default function ChatInterface({ documentId, analysisText }: ChatInterfac
       </form>
     </div>
   )
-} 
+}

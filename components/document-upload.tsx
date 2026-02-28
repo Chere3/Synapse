@@ -5,12 +5,8 @@ import { useAuth } from './providers/auth-provider'
 import { toast } from 'react-toastify'
 import { Upload, FileText } from 'lucide-react'
 import { extractTextFromFile } from '@/utils/ocr'
-import { analyzeDocumentText, RiskAnalysis } from '@/utils/analysis'
+import { RiskAnalysis } from '@/utils/analysis'
 import { Progress } from './ui/progress'
-import AnalysisResults from './analysis-results'
-import { Domine } from 'next/font/google'
-
-const domine = Domine({preload: true, subsets: ['latin']})
 
 interface DocumentUploadProps {
   onAnalysisComplete?: (analysis: RiskAnalysis[]) => void
@@ -115,10 +111,22 @@ export default function DocumentUpload({ onAnalysisComplete }: DocumentUploadPro
         setIsAnalyzing(true)
         setCurrentStep('Analyzing document...')
         try {
-          const analysis = await analyzeDocumentText(extractedText, (step, progress, total) => {
-            setCurrentStep(step)
-            setAnalysisProgress((progress / total) * 100)
+          setCurrentStep('Sending text for legal analysis...')
+          setAnalysisProgress(30)
+
+          const analysisResponse = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: extractedText })
           })
+
+          if (!analysisResponse.ok) {
+            throw new Error('Analysis request failed')
+          }
+
+          const analysisData = await analysisResponse.json()
+          const analysis = (analysisData.analysis ?? []) as RiskAnalysis[]
+          setAnalysisProgress(80)
 
           // Save analysis results
           await supabaseClient
@@ -126,7 +134,7 @@ export default function DocumentUpload({ onAnalysisComplete }: DocumentUploadPro
             .insert({
               document_id: document.id,
               user_id: user.id,
-              analysis: analysis,
+              analysis,
               status: 'completed'
             })
 

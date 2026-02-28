@@ -1,46 +1,55 @@
 import { NextResponse } from 'next/server'
 import { Cerebras } from '@cerebras/cerebras_cloud_sdk'
+import { getRequiredCerebrasApiKey } from '@/utils/env'
 
-// Get API key from environment variables
-const CEREBRAS_API_KEY = process.env.CEREBRAS_API_KEY || process.env.NEXT_PUBLIC_CEREBRAS_API_KEY
-
-if (!CEREBRAS_API_KEY) {
-  console.error('Cerebras API key is not configured. Please check your environment variables.')
-}
-
-interface CerebrasResponse {
-  choices: Array<{
-    message: {
-      content: string
-    }
-  }>
+interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
 }
 
 export async function POST(request: Request) {
   try {
-    const { messages, documentId } = await request.json()
+    const { messages, analysisText } = await request.json()
 
-    // Get the analysis context from the system message
-    const systemMessage = messages.find((m: any) => m.role === 'system')
-    const analysisContext = systemMessage ? JSON.parse(systemMessage.content.split('context: ')[1]) : null
+    const safeMessages = (Array.isArray(messages) ? messages : [])
+      .filter(
+        (m: any): m is ChatMessage =>
+          (m?.role === 'user' || m?.role === 'assistant') && typeof m?.content === 'string'
+      )
+      .map((m) => ({ role: m.role, content: m.content })) as Array<{ role: 'user' | 'assistant'; content: string }>
 
-    const client = new Cerebras({
-      apiKey: CEREBRAS_API_KEY
-    })
+    if (safeMessages.length === 0) {
+      return NextResponse.json({ error: 'No chat messages provided' }, { status: 400 })
+    }
 
-    const chatCompletion = await client.chat.completions.create({
-      messages: messages.filter((m: any) => m.role !== 'system'),
+    const client = new Cerebras({ apiKey: getRequiredCerebrasApiKey() })
+
+    const completion: any = await client.chat.completions.create({
       model: 'llama-4-scout-17b-16e-instruct',
       temperature: 0.3,
-      max_tokens: 5000
-    }) as CerebrasResponse
+      max_tokens: 3000,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a legal document analysis assistant. Base your answers on the provided analysis context. If context is insufficient, say so clearly.',
+        },
+        {
+          role: 'system',
+          content: `Analysis context:\n${typeof analysisText === 'string' ? analysisText : '[]'}`,
+        },
+        ...safeMessages,
+      ],
+    })
 
-    return NextResponse.json({ content: chatCompletion.choices[0].message.content })
+    const content = completion.choices?.[0]?.message?.content
+    if (!content) {
+      return NextResponse.json({ error: 'Empty model response' }, { status: 502 })
+    }
+
+    return NextResponse.json({ content })
   } catch (error) {
-    console.error('Error:', error)
-    return NextResponse.json(
-      { error: 'Failed to process chat request' },
-      { status: 500 }
-    )
+    console.error('Chat route error:', error)
+    return NextResponse.json({ error: 'Failed to process chat request' }, { status: 500 })
   }
-} 
+}
