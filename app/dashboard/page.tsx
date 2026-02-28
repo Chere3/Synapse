@@ -10,6 +10,7 @@ import { RiskAnalysis } from '@/utils/analysis'
 import { Database } from '@/types/supabase'
 import { ChevronLeft, ChevronRight, LogOut, FileText, User, Sparkles, MessageSquare, Download, Share2, X } from 'lucide-react'
 import DocumentPreviewWithAnnotations from '@/components/document-preview-with-annotations'
+import PdfReviewViewer from '@/components/pdf-review/PdfReviewViewer'
 
 // ─────────────────────────────────────────────────────────
 // Types
@@ -174,6 +175,8 @@ export default function DashboardPage() {
   const router = useRouter()
   const [selectedAnalysis, setSelectedAnalysis] = useState<Analysis | null>(null)
   const [currentAnalysis, setCurrentAnalysis] = useState<RiskAnalysis[] | null>(null)
+  const [currentFilePath, setCurrentFilePath] = useState<string | null>(null)
+  const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isScrolled, setIsScrolled] = useState(false)
   const [showChat, setShowChat] = useState(false)
@@ -188,10 +191,45 @@ export default function DashboardPage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const handleNewAnalysis = (analysis: RiskAnalysis[]) => {
+  const handleNewAnalysis = (analysis: RiskAnalysis[], filePath?: string) => {
     setCurrentAnalysis(analysis)
     setSelectedAnalysis(null)
     setShowChat(false)
+    if (filePath) {
+      setCurrentFilePath(filePath)
+      // Resolve signed URL for new upload
+      supabaseClient.storage
+        .from('documents')
+        .createSignedUrl(filePath, 3600)
+        .then(({ data }) => {
+          if (data?.signedUrl) setActivePdfUrl(data.signedUrl)
+        })
+        .catch(() => setActivePdfUrl(null))
+    } else {
+      setCurrentFilePath(null)
+      setActivePdfUrl(null)
+    }
+  }
+
+  const handleAnalysisSelect = async (analysis: Analysis | null) => {
+    setSelectedAnalysis(analysis)
+    setActivePdfUrl(null)
+    if (!analysis) return
+    // Fetch the document row to get file_path, then resolve signed URL
+    try {
+      const { data: doc } = await supabaseClient
+        .from('documents')
+        .select('file_path, file_url')
+        .eq('id', analysis.document_id)
+        .single()
+      if (doc) {
+        const { data: urlData } = await supabaseClient.storage
+          .from('documents')
+          .createSignedUrl(doc.file_path, 3600)
+        if (urlData?.signedUrl) setActivePdfUrl(urlData.signedUrl)
+        else if (doc.file_url) setActivePdfUrl(doc.file_url)
+      }
+    } catch { /* silent — PDF viewer will show its own error */ }
   }
 
   const activeAnalysis = selectedAnalysis?.analysis ?? currentAnalysis
@@ -402,7 +440,7 @@ export default function DashboardPage() {
               </h2>
             </div>
             <div className="flex-1 overflow-y-auto scrollbar-hide">
-              <DocumentList onAnalysisSelect={setSelectedAnalysis} isCollapsed={false} />
+              <DocumentList onAnalysisSelect={handleAnalysisSelect} isCollapsed={false} />
             </div>
           </div>
         </aside>
@@ -488,11 +526,20 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Document preview with GitHub-style risk annotations */}
-                    <DocumentPreviewWithAnnotations
-                      analysis={activeAnalysis!}
-                      documentTitle={docTitle}
-                    />
+                    {/* PDF viewer with real document rendering + annotation overlay */}
+                    {activePdfUrl ? (
+                      <PdfReviewViewer
+                        pdfUrl={activePdfUrl}
+                        analysis={activeAnalysis!}
+                        documentTitle={docTitle}
+                      />
+                    ) : (
+                      /* Fallback: clause-text preview when PDF URL not yet resolved */
+                      <DocumentPreviewWithAnnotations
+                        analysis={activeAnalysis!}
+                        documentTitle={docTitle}
+                      />
+                    )}
 
                     {/* Action buttons — identical structure, real actions */}
                     <div className="mt-5 flex flex-wrap gap-2">

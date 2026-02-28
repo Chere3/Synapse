@@ -9,7 +9,7 @@ import { RiskAnalysis } from '@/utils/analysis'
 import { Progress } from './ui/progress'
 
 interface DocumentUploadProps {
-  onAnalysisComplete?: (analysis: RiskAnalysis[]) => void
+  onAnalysisComplete?: (analysis: RiskAnalysis[], filePath?: string) => void
 }
 
 export default function DocumentUpload({ onAnalysisComplete }: DocumentUploadProps) {
@@ -125,7 +125,7 @@ export default function DocumentUpload({ onAnalysisComplete }: DocumentUploadPro
             .update({ status: 'analyzed' })
             .eq('id', document.id)
 
-          if (onAnalysisComplete) onAnalysisComplete(analysis)
+          if (onAnalysisComplete) onAnalysisComplete(analysis, filePath)
           setDone(true)
         } catch (error) {
           console.error('Analysis error:', error)
