@@ -1,9 +1,22 @@
 # Synapse
 
+<div align="center">
+
 ![Synapse Banner](assets/banner-readme.png)
 
-**Enterprise AI Contract Intelligence Platform**  
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-M3%20Design%20System-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-0f172a.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-16a34a.svg)](../../pulls)
+
+**Enterprise AI Contract Intelligence Platform**
+
 Synapse helps legal and operations teams analyze contracts in minutes, standardize risk review, and accelerate decision-making with auditable AI outputs.
+
+</div>
 
 ---
 
