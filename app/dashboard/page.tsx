@@ -266,17 +266,6 @@ export default function DashboardPage() {
           {isSidebarOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
         </button>
 
-        {/* URL-bar pill — same style as demo, shows current doc */}
-        <div
-          className="ml-1 flex-1 rounded-md-sm px-3 py-1 text-label-sm text-md-on-surface-variant truncate"
-          style={{ background: 'var(--md-sys-color-surface-variant)', maxWidth: 320 }}
-          aria-label="Current document"
-        >
-          {hasAnalysis
-            ? `app.synapse.legal/analysis/${docTitle.replace(/\s+/g, '-').toLowerCase()}`
-            : 'app.synapse.legal/dashboard'}
-        </div>
-
         {/* Status badge — real state */}
         {hasAnalysis && (
           <div className="ml-2 hidden sm:block">
@@ -337,15 +326,55 @@ export default function DashboardPage() {
                   background: 'var(--md-sys-color-surface-2)',
                   borderColor: 'var(--md-sys-color-outline-variant)',
                 }}
-                aria-label="Uploaded document"
+                aria-label="Uploaded document summary"
               >
-                <p className="text-label-sm uppercase tracking-widest text-md-on-surface-variant">Uploaded document</p>
-                <p className="mt-1 truncate text-title-sm font-semibold text-md-on-surface">{docTitle}</p>
-                <p className="mt-0.5 text-body-sm text-md-on-surface-variant">
-                  {selectedAnalysis
-                    ? `Uploaded ${new Date(selectedAnalysis.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                    : 'Just uploaded · AI analysis complete'}
-                </p>
+                <p className="text-label-sm uppercase tracking-widest text-md-on-surface-variant">Uploaded Document</p>
+                <p className="mt-1 text-body-sm text-md-on-surface-variant">AI analysis ready for review</p>
+
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                  {[
+                    { val: String(activeAnalysis!.length), label: 'Clauses' },
+                    { val: String(highCount), label: 'High Risk' },
+                    { val: String(lowCount), label: 'Low Risk' },
+                  ].map((m) => (
+                    <div
+                      key={m.label}
+                      className="rounded-md-md py-2"
+                      style={{ background: 'var(--md-sys-color-surface-1)' }}
+                    >
+                      <p className="text-title-sm font-bold text-md-on-surface">{m.val}</p>
+                      <p className="text-label-sm text-md-on-surface-variant">{m.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <p className="mt-3 text-label-sm font-semibold uppercase tracking-wider text-md-on-surface-variant">Risk Distribution</p>
+                <div className="mt-2 space-y-1.5">
+                  {[
+                    { k: 'Critical (level 5)', v: activeAnalysis!.filter(a => a.riskLevel === 5).length },
+                    { k: 'High (level 4)', v: activeAnalysis!.filter(a => a.riskLevel === 4).length },
+                    { k: 'Moderate (level 3)', v: activeAnalysis!.filter(a => a.riskLevel === 3).length },
+                    { k: 'Low (level 2)', v: activeAnalysis!.filter(a => a.riskLevel === 2).length },
+                    { k: 'Minimal (level 1)', v: activeAnalysis!.filter(a => a.riskLevel === 1).length },
+                  ].map(({ k, v }) => (
+                    <div key={k} className="flex items-center justify-between gap-2">
+                      <span className="text-body-sm text-md-on-surface-variant">{k}</span>
+                      <span className="text-label-sm font-medium text-md-on-surface">{v} clause{v !== 1 ? 's' : ''}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {['SOC 2', 'GDPR', 'AES-256'].map((b) => (
+                    <span
+                      key={b}
+                      className="rounded-md-full px-2.5 py-0.5 text-label-sm"
+                      style={{ background: 'var(--md-sys-color-primary-container)', color: 'var(--md-sys-color-on-primary-container)' }}
+                    >
+                      ✓ {b}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -427,86 +456,8 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
-                {/* Two-column split — identical structure to demo */}
-                <div className="grid grid-cols-1 divide-md-outline-variant lg:grid-cols-[1fr_1.35fr] lg:divide-x">
-
-                  {/* ── Left: Document metadata ── */}
-                  <div className="p-5">
-                    {/* Doc header — identical to demo */}
-                    <div className="mb-4 flex items-start gap-3">
-                      <div
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md-md text-md-on-primary"
-                        style={{ background: 'var(--md-sys-color-primary)' }}
-                        aria-hidden="true"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                          <polyline points="14 2 14 8 20 8" />
-                          <line x1="16" y1="13" x2="8" y2="13" />
-                          <line x1="16" y1="17" x2="8" y2="17" />
-                          <polyline points="10 9 9 9 8 9" />
-                        </svg>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-title-sm font-semibold text-md-on-surface">{docTitle}</p>
-                        <p className="text-body-sm text-md-on-surface-variant">
-                          AI analysis ready for review
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Metrics row — identical structure, real data */}
-                    <div className="mb-5 grid grid-cols-3 gap-2 text-center">
-                      {[
-                        { val: String(activeAnalysis!.length), label: 'Clauses' },
-                        { val: String(highCount),              label: 'High Risk' },
-                        { val: String(lowCount),               label: 'Low Risk' },
-                      ].map((m) => (
-                        <div
-                          key={m.label}
-                          className="rounded-md-md py-2.5"
-                          style={{ background: 'var(--md-sys-color-surface-2)' }}
-                        >
-                          <p className="text-title-md font-bold text-md-on-surface">{m.val}</p>
-                          <p className="text-label-sm text-md-on-surface-variant">{m.label}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Risk distribution — replaces "Key Terms" section */}
-                    <p className="mb-3 text-label-sm font-semibold uppercase tracking-wider text-md-on-surface-variant">
-                      Risk Distribution
-                    </p>
-                    <div className="space-y-2">
-                      {[
-                        { k: 'Critical (level 5)', v: activeAnalysis!.filter(a => a.riskLevel === 5).length },
-                        { k: 'High (level 4)',     v: activeAnalysis!.filter(a => a.riskLevel === 4).length },
-                        { k: 'Moderate (level 3)', v: activeAnalysis!.filter(a => a.riskLevel === 3).length },
-                        { k: 'Low (level 2)',       v: activeAnalysis!.filter(a => a.riskLevel === 2).length },
-                        { k: 'Minimal (level 1)',   v: activeAnalysis!.filter(a => a.riskLevel === 1).length },
-                      ].map(({ k, v }) => (
-                        <div key={k} className="flex items-center justify-between gap-2">
-                          <span className="text-body-sm text-md-on-surface-variant">{k}</span>
-                          <span className="text-label-sm font-medium text-md-on-surface">{v} clause{v !== 1 ? 's' : ''}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Trust badges — identical to demo */}
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {['SOC 2', 'GDPR', 'AES-256'].map((b) => (
-                        <span
-                          key={b}
-                          className="rounded-md-full px-2.5 py-0.5 text-label-sm"
-                          style={{ background: 'var(--md-sys-color-primary-container)', color: 'var(--md-sys-color-on-primary-container)' }}
-                        >
-                          ✓ {b}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* ── Right: Risk analysis — identical structure, real data ── */}
+                {/* Main analysis panel */}
+                <div>
                   <div className="p-5">
                     {/* Risk score + summary — identical to demo */}
                     <div
