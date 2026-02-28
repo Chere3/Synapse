@@ -74,7 +74,8 @@ function AnnotationPin({ clause, isSelected, pageWidth, pageHeight, onSelect }: 
   const y = Math.max(8, clause.anchor.yFraction * pageHeight)
   const w = Math.max(32, clause.anchor.wFraction * pageWidth)
   const h = Math.max(12, clause.anchor.hFraction * pageHeight)
-  const isApprox = clause.anchor.matchKind === 'fallback'
+  const isApprox = clause.anchor.matchKind === 'fallback' || clause.anchor.matchKind === 'fuzzy'
+  const canUnderline = clause.anchor.matchKind === 'exact' || clause.anchor.matchKind === 'normalized'
 
   const chipWidth = 210
   const leftForChip = Math.max(8, Math.min(x, pageWidth - chipWidth - 8))
@@ -82,22 +83,24 @@ function AnnotationPin({ clause, isSelected, pageWidth, pageHeight, onSelect }: 
 
   return (
     <>
-      {/* Severity underline over the matched clause */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          left: x,
-          top: y + h - 2,
-          width: Math.min(w, pageWidth - x - 8),
-          height: isSelected ? 4 : 3,
-          borderRadius: 999,
-          background: c.ring,
-          opacity: isSelected ? 0.95 : 0.75,
-          boxShadow: isSelected ? `0 0 0 1px ${c.ring}` : 'none',
-          zIndex: 9,
-        }}
-      />
+      {/* Severity underline over the matched clause (only reliable matches) */}
+      {canUnderline && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: x,
+            top: y + Math.max(2, h * 0.92),
+            width: Math.min(Math.max(28, w), pageWidth - x - 8),
+            height: isSelected ? 4 : 3,
+            borderRadius: 999,
+            background: c.ring,
+            opacity: isSelected ? 0.95 : 0.78,
+            boxShadow: isSelected ? `0 0 0 1px ${c.ring}` : 'none',
+            zIndex: 9,
+          }}
+        />
+      )}
 
       {/* Connector from chip down to underline */}
       <div

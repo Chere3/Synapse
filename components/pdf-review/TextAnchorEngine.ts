@@ -144,30 +144,42 @@ export function anchorClause(
   const cache = anchorCache.get(pdfDoc as object)!
   if (cache.has(clauseText)) return cache.get(clauseText)!
 
-  const searchStr  = clauseText.slice(0, SEARCH_PREFIX_LEN)
+  const fullClause = clauseText.trim()
+  const searchStr  = clauseText.slice(0, SEARCH_PREFIX_LEN).trim()
+  const exactNeedles = Array.from(new Set([fullClause, searchStr].filter(s => s.length > 0)))
+
+  const normFull   = normalizeText(fullClause)
   const normSearch = normalizeText(searchStr)
+  const normNeedles = Array.from(new Set([normFull, normSearch].filter(s => s.length > 0)))
+
   const queryToks  = contentTokens(searchStr)
 
   let result: TextAnchor | null = null
 
   // ── Tier 1: exact (raw text) ────────────────────────────────────────────────
-  for (const pd of pageTexts) {
-    const idx = pd.rawText.indexOf(searchStr)
-    if (idx !== -1) {
-      const pos = findPositionInPage(pd, idx)
-      result = { pageIndex: pd.pageIndex, ...pos, matchKind: 'exact' as MatchKind, confidence: 1.0 }
-      break
+  for (const needle of exactNeedles) {
+    if (result) break
+    for (const pd of pageTexts) {
+      const idx = pd.rawText.indexOf(needle)
+      if (idx !== -1) {
+        const pos = findPositionInPage(pd, idx)
+        result = { pageIndex: pd.pageIndex, ...pos, matchKind: 'exact' as MatchKind, confidence: 1.0 }
+        break
+      }
     }
   }
 
   // ── Tier 2: normalised (handles OCR punctuation corruption) ─────────────────
   if (!result) {
-    for (const pd of pageTexts) {
-      const idx = pd.normText.indexOf(normSearch)
-      if (idx !== -1) {
-        const pos = findPositionInPage(pd, idx)
-        result = { pageIndex: pd.pageIndex, ...pos, matchKind: 'normalized' as MatchKind, confidence: 0.85 }
-        break
+    for (const needle of normNeedles) {
+      if (result) break
+      for (const pd of pageTexts) {
+        const idx = pd.normText.indexOf(needle)
+        if (idx !== -1) {
+          const pos = findPositionInPage(pd, idx)
+          result = { pageIndex: pd.pageIndex, ...pos, matchKind: 'normalized' as MatchKind, confidence: 0.85 }
+          break
+        }
       }
     }
   }
