@@ -10,14 +10,11 @@ import { Domine } from 'next/font/google'
 const domine = Domine({preload: true, subsets: ["latin"]})
 
 export default function AuthPage() {
-  const [mounted, setMounted] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
   const router = useRouter()
   const { supabaseClient, loading } = useAuth()
 
   useEffect(() => {
-    setMounted(true)
-    
     if (!loading) {
       // Set up auth state change listener
       const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -33,7 +30,7 @@ export default function AuthPage() {
     }
   }, [router, supabaseClient, loading])
 
-  if (!mounted || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-orange-500" />
