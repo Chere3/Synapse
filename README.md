@@ -1,43 +1,68 @@
-# Synapse — AI Contract Analysis Platform
+# Synapse
 
 ![Synapse Banner](assets/banner-readme.png)
 
-Synapse is a full-stack legal-tech app that helps teams analyze contracts faster with AI. Upload a document, extract key clauses, score risk levels, and get actionable explanations in a modern Material Design 3 interface.
-
-## Why Synapse
-
-- **Faster legal review** with AI-assisted analysis
-- **Clause-level risk scoring** with clear explanations
-- **Document + chat workflow** in one place
-- **Secure auth and data isolation** with Supabase RLS
-- **Premium UX** built with Next.js, React, TypeScript, and Tailwind
+**Enterprise AI Contract Intelligence Platform**  
+Synapse helps legal and operations teams analyze contracts in minutes, standardize risk review, and accelerate decision-making with auditable AI outputs.
 
 ---
 
-## Tech Stack
+## Executive Summary
 
-- **Framework:** Next.js 16 (App Router), React 19, TypeScript
-- **Styling:** Tailwind CSS + Material Design 3 token system
-- **Auth & DB:** Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
-- **AI:** Cerebras Cloud SDK
-- **Document parsing / OCR:** `pdfjs-dist`, `tesseract.js`
-- **UI libs:** `lucide-react`, Radix Progress, `react-toastify`
+Synapse combines AI-powered legal analysis, secure document handling, and a premium review workspace to reduce contract turnaround time while improving consistency and control.
+
+### Business Outcomes
+- **Faster review cycles** for NDAs, MSAs, vendor agreements, and internal contracts
+- **Standardized risk scoring** across teams and reviewers
+- **Clear, explainable outputs** at clause level
+- **Lower operational bottlenecks** between legal, procurement, and business units
 
 ---
 
-## Project Structure
+## Core Capabilities
+
+- **AI contract analysis** (clause extraction + risk classification)
+- **Clause-level explanations** with actionable context
+- **Document ingestion workflow** (upload, parse, analyze, review)
+- **Interactive analysis workspace** (dashboard + chat)
+- **Secure authentication and data isolation** with Supabase RLS
+- **Material Design 3-based UI system** for consistency and scalability
+
+---
+
+## Platform Architecture
+
+### Application Layer
+- **Next.js 16** (App Router)
+- **React 19 + TypeScript**
+- **Tailwind CSS + M3 tokens**
+
+### Intelligence Layer
+- **Cerebras Cloud SDK** for model inference
+- Analysis API routes for contract review and chat flows
+
+### Data & Auth Layer
+- **Supabase** (Auth, Postgres, Storage)
+- Row-Level Security for tenant/user isolation
+
+### Document Processing
+- `pdfjs-dist` and `tesseract.js` for document parsing / OCR paths
+
+---
+
+## Repository Structure
 
 ```text
 app/
   api/
-    analyze/route.ts      # contract analysis endpoint
-    chat/route.ts         # chat endpoint
+    analyze/route.ts
+    chat/route.ts
   auth/
-    page.tsx              # auth screen
-    callback/route.ts     # auth callback
-  dashboard/page.tsx      # main app dashboard
-  page.tsx                # marketing landing page
-  globals.css             # global styles + M3 tokens
+    page.tsx
+    callback/route.ts
+  dashboard/page.tsx
+  page.tsx
+  globals.css
 
 components/
   analysis-results.tsx
@@ -48,67 +73,49 @@ components/
   auth-redirect.tsx
 
 supabase/
-  migrations/             # DB schema and storage setup
+  migrations/
 ```
 
 ---
 
-## Getting Started
+## Security & Data Controls
 
-### 1) Prerequisites
+- Supabase Auth-based identity
+- Row-Level Security (RLS) on business tables
+- Server-side secret handling (`CEREBRAS_API_KEY` never exposed client-side)
+- Controlled API surface via Next.js route handlers
 
-- Node.js **22+** recommended
-- `pnpm` (project uses `pnpm@10` lockfile)
+> For production, enforce least-privilege keys, secure callback URLs, environment separation, and audit logging.
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Node.js **22+**
+- `pnpm` (lockfile is `pnpm@10`)
 - Supabase project
-- Cerebras API key
+- Cerebras API credentials
 
-### 2) Clone
+### Setup
 
 ```bash
 git clone https://github.com/Chere3/Synapse.git
 cd Synapse
-```
-
-### 3) Install dependencies
-
-```bash
 pnpm install
-```
-
-### 4) Configure environment
-
-Copy the example file and fill values:
-
-```bash
 cp .env.local.example .env.local
 ```
 
-Required vars:
+Configure `.env.local`:
 
 ```env
-# Supabase (required)
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
-
-# Cerebras (required, server-side only)
 CEREBRAS_API_KEY=
-
-# Optional app URL
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-### 5) Run database migrations
-
-Use your preferred Supabase workflow to apply files in `supabase/migrations`:
-
-- `20240101000000_create_documents.sql`
-- `20240101000001_create_storage.sql`
-- `20240101000002_add_extracted_text.sql`
-- `20240101000003_create_analysis.sql`
-
----
-
-## Local Development
+Apply Supabase migrations from `supabase/migrations/`, then run:
 
 ```bash
 pnpm dev
@@ -118,31 +125,32 @@ Open: <http://localhost:3000>
 
 ---
 
-## Scripts
+## Operational Commands
 
 ```bash
-pnpm dev      # start dev server
-pnpm build    # production build
-pnpm start    # start production server
-pnpm lint     # lint project
+pnpm dev      # local development
+pnpm lint     # lint checks
+pnpm build    # production build validation
+pnpm start    # run production build
 ```
 
 ---
 
-## Deployment Notes
+## Deployment Guidance
 
-- Set all environment variables in your hosting platform.
-- Ensure Supabase auth callback URLs include your deployed domain.
-- Run `pnpm build` in CI before deployment.
+- Promote with CI gates (`lint` + `build`)
+- Set production env vars in your host platform
+- Configure Supabase auth redirect URLs per environment
+- Validate API behavior and RLS before go-live
 
 ---
 
-## Contributing
+## Contribution Workflow
 
-1. Create a feature branch
-2. Make focused changes
-3. Run checks (`pnpm lint`, `pnpm build`)
-4. Open a pull request with clear verification steps
+1. Create a scoped feature branch
+2. Keep commits conventional and focused
+3. Run `pnpm lint` + `pnpm build`
+4. Open PR with verification notes and screenshots for UI changes
 
 ---
 
@@ -153,5 +161,5 @@ MIT — see [LICENSE](LICENSE).
 ---
 
 <div align="center">
-  <sub>Built by Cheree Team</sub>
+  <sub>Synapse · Legal AI Infrastructure for high-velocity teams</sub>
 </div>
