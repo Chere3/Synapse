@@ -1,132 +1,176 @@
-# Synapse - Legal Document Analysis Platform
+<div align="center">
 
-![Synapse Banner](assets/Banner%20synapse.png)
+![Synapse Banner](assets/banner-readme.png)
 
-A powerful full-stack application that leverages AI to analyze legal documents through the Cerebras API, providing intelligent insights and document management capabilities.
+[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-000000?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-M3%20Design%20System-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-0f172a.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-16a34a.svg)](../../pulls)
 
-## 🚀 Features
+**Enterprise AI Contract Intelligence Platform**
 
-- 🔐 Secure user authentication with Supabase
-- 📄 Document upload and management system
-- 🤖 AI-powered legal document analysis
-- 🔄 Real-time status updates
-- 🎨 Modern and responsive UI
-- 🔍 Advanced document search capabilities
+Synapse helps legal and operations teams analyze contracts in minutes, standardize risk review, and accelerate decision-making with auditable AI outputs.
 
-## 📋 Prerequisites
+</div>
 
-- Node.js 18+ or Bun
-- Supabase account
-- Cerebras API access
+---
 
-## 🛠️ Setup
+## Executive Summary
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/synapse.git
-cd synapse
+Synapse combines AI-powered legal analysis, secure document handling, and a premium review workspace to reduce contract turnaround time while improving consistency and control.
+
+### Business Outcomes
+- **Faster review cycles** for NDAs, MSAs, vendor agreements, and internal contracts
+- **Standardized risk scoring** across teams and reviewers
+- **Clear, explainable outputs** at clause level
+- **Lower operational bottlenecks** between legal, procurement, and business units
+
+---
+
+## Core Capabilities
+
+- **AI contract analysis** (clause extraction + risk classification)
+- **Clause-level explanations** with actionable context
+- **Document ingestion workflow** (upload, parse, analyze, review)
+- **Interactive analysis workspace** (dashboard + chat)
+- **Secure authentication and data isolation** with Supabase RLS
+- **Material Design 3-based UI system** for consistency and scalability
+
+---
+
+## Platform Architecture
+
+### Application Layer
+- **Next.js 16** (App Router)
+- **React 19 + TypeScript**
+- **Tailwind CSS + M3 tokens**
+
+### Intelligence Layer
+- **Cerebras Cloud SDK** for model inference
+- Analysis API routes for contract review and chat flows
+
+### Data & Auth Layer
+- **Supabase** (Auth, Postgres, Storage)
+- Row-Level Security for tenant/user isolation
+
+### Document Processing
+- `pdfjs-dist` and `tesseract.js` for document parsing / OCR paths
+
+---
+
+## Repository Structure
+
+```text
+app/
+  api/
+    analyze/route.ts
+    chat/route.ts
+  auth/
+    page.tsx
+    callback/route.ts
+  dashboard/page.tsx
+  page.tsx
+  globals.css
+
+components/
+  analysis-results.tsx
+  chat-interface.tsx
+  document-list.tsx
+  document-upload.tsx
+  hero-demo-mockup.tsx
+  auth-redirect.tsx
+
+supabase/
+  migrations/
 ```
 
-2. Install dependencies:
+---
+
+## Security & Data Controls
+
+- Supabase Auth-based identity
+- Row-Level Security (RLS) on business tables
+- Server-side secret handling (`CEREBRAS_API_KEY` never exposed client-side)
+- Controlled API surface via Next.js route handlers
+
+> For production, enforce least-privilege keys, secure callback URLs, environment separation, and audit logging.
+
+---
+
+## Quick Start
+
+### Prerequisites
+- Node.js **22+**
+- `pnpm` (lockfile is `pnpm@10`)
+- Supabase project
+- Cerebras API credentials
+
+### Setup
+
 ```bash
-bun install
+git clone https://github.com/Chere3/Synapse.git
+cd Synapse
+pnpm install
+cp .env.local.example .env.local
 ```
 
-3. Create a `.env.local` file in the root directory with the following variables:
+Configure `.env.local`:
+
 ```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-
-# Cerebras API Configuration (server-only)
-CEREBRAS_API_KEY=your-cerebras-api-key
-
-# Site URL (for auth redirects)
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+CEREBRAS_API_KEY=
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-4. Set up your Supabase database with the following tables:
+Apply Supabase migrations from `supabase/migrations/`, then run:
 
-```sql
--- Documents table
-create table documents (
-  id uuid default uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  user_id uuid references auth.users not null,
-  title text not null,
-  content text not null,
-  status text not null default 'pending'
-);
-
--- Analysis table
-create table analysis (
-  id uuid default uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  document_id uuid references documents not null,
-  user_id uuid references auth.users not null,
-  analysis jsonb not null,
-  status text not null default 'pending'
-);
-
--- Set up Row Level Security (RLS)
-alter table documents enable row level security;
-alter table analysis enable row level security;
-
--- Create policies
-create policy "Users can view their own documents"
-  on documents for select
-  using (auth.uid() = user_id);
-
-create policy "Users can insert their own documents"
-  on documents for insert
-  with check (auth.uid() = user_id);
-
-create policy "Users can view their own analysis"
-  on analysis for select
-  using (auth.uid() = user_id);
-
-create policy "Users can insert their own analysis"
-  on analysis for insert
-  with check (auth.uid() = user_id);
-```
-
-## 🚀 Running the Application
-
-1. Start the development server:
 ```bash
-bun run dev
+pnpm dev
 ```
 
-2. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open: <http://localhost:3000>
 
-## 🏗️ Production Deployment
+---
 
-1. Build the application:
+## Operational Commands
+
 ```bash
-bun run build
+pnpm dev      # local development
+pnpm lint     # lint checks
+pnpm build    # production build validation
+pnpm start    # run production build
 ```
 
-2. Start the production server:
-```bash
-bun run start
-```
+---
 
-## 🤝 Contributing
+## Deployment Guidance
 
-We welcome contributions! Here's how you can help:
+- Promote with CI gates (`lint` + `build`)
+- Set production env vars in your host platform
+- Configure Supabase auth redirect URLs per environment
+- Validate API behavior and RLS before go-live
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+---
 
-## 📄 License
+## Contribution Workflow
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+1. Create a scoped feature branch
+2. Keep commits conventional and focused
+3. Run `pnpm lint` + `pnpm build`
+4. Open PR with verification notes and screenshots for UI changes
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ by Cheree team</sub>
+  <sub>Synapse · Legal AI Infrastructure for high-velocity teams</sub>
 </div>
