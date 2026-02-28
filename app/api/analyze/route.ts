@@ -3,6 +3,8 @@ import { Cerebras } from '@cerebras/cerebras_cloud_sdk'
 import { getRequiredCerebrasApiKey } from '@/utils/env'
 import { normalizeAnalysisPayload } from '@/utils/analysis'
 
+const ANALYSIS_MODEL = process.env.CEREBRAS_MODEL ?? 'llama3.1-8b'
+
 const ANALYSIS_PROMPT = `Analyze the following legal text and identify clauses with potential risks. For each identified clause, provide:
 1. The exact text of the clause with its line numbers
 2. A risk level from 1 to 5, where:
@@ -27,17 +29,69 @@ Return ONLY valid JSON with this exact structure:
 Text to analyze:
 `
 
+function extractFirstJsonObject(input: string): string | null {
+  const start = input.indexOf('{')
+  if (start === -1) return null
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+
+  for (let i = start; i < input.length; i++) {
+    const ch = input[i]
+
+    if (inString) {
+      if (escaped) {
+        escaped = false
+      } else if (ch === '\\') {
+        escaped = true
+      } else if (ch === '"') {
+        inString = false
+      }
+      continue
+    }
+
+    if (ch === '"') {
+      inString = true
+      continue
+    }
+
+    if (ch === '{') depth++
+    if (ch === '}') {
+      depth--
+      if (depth === 0) {
+        return input.slice(start, i + 1)
+      }
+    }
+  }
+
+  return null
+}
+
 function parseJsonFromModel(content: string): unknown {
   const trimmed = content.trim()
-  try {
-    return JSON.parse(trimmed)
-  } catch {
-    const codeBlockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i)
-    if (codeBlockMatch?.[1]) {
-      return JSON.parse(codeBlockMatch[1].trim())
-    }
-    throw new Error('Model response was not valid JSON')
+
+  const candidates: string[] = [trimmed]
+
+  const codeBlockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  if (codeBlockMatch?.[1]) {
+    candidates.push(codeBlockMatch[1].trim())
   }
+
+  const extracted = extractFirstJsonObject(trimmed)
+  if (extracted) {
+    candidates.push(extracted)
+  }
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate)
+    } catch {
+      // try next candidate
+    }
+  }
+
+  throw new Error('Model response was not valid JSON')
 }
 
 export async function POST(request: Request) {
@@ -51,7 +105,7 @@ export async function POST(request: Request) {
     const client = new Cerebras({ apiKey: getRequiredCerebrasApiKey() })
 
     const completion: any = await client.chat.completions.create({
-      model: 'llama-4-scout-17b-16e-instruct',
+      model: ANALYSIS_MODEL,
       temperature: 0.2,
       max_tokens: 4000,
       messages: [
@@ -79,8 +133,20 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ analysis: normalized })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Analyze route error:', error)
-    return NextResponse.json({ error: 'Failed to analyze document' }, { status: 500 })
+
+    const providerMessage = error?.error?.message ?? error?.message
+    if (error?.status === 404 && providerMessage?.toLowerCase().includes('model')) {
+      return NextResponse.json(
+        { error: `Cerebras model not available: ${ANALYSIS_MODEL}` },
+        { status: 502 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: providerMessage ?? 'Failed to analyze document' },
+      { status: 500 }
+    )
   }
 }

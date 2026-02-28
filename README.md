@@ -1,6 +1,6 @@
 # Synapse - Legal Document Analysis Platform
 
-![Synapse Banner](assets/Banner%20synapse.png)
+![Synapse Banner](assets/banner-readme.png)
 
 A powerful full-stack application that leverages AI to analyze legal documents through the Cerebras API, providing intelligent insights and document management capabilities.
 
