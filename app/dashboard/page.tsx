@@ -17,6 +17,8 @@ import PdfReviewViewer from '@/components/pdf-review/PdfReviewViewer'
 // ─────────────────────────────────────────────────────────
 type Analysis = Database['public']['Tables']['analysis']['Row'] & {
   analysis: RiskAnalysis[]
+  file_path?: string | null
+  file_url?: string | null
 }
 
 // ─────────────────────────────────────────────────────────
@@ -215,14 +217,32 @@ export default function DashboardPage() {
     setSelectedAnalysis(analysis)
     setActivePdfUrl(null)
     if (!analysis) return
-    // Fetch the document row to get file_path, then resolve signed URL
+
+    // Fast path: DocumentList already provides file_path/file_url
+    if (analysis.file_path) {
+      try {
+        const { data: urlData } = await supabaseClient.storage
+          .from('documents')
+          .createSignedUrl(analysis.file_path, 3600)
+        if (urlData?.signedUrl) {
+          setActivePdfUrl(urlData.signedUrl)
+          return
+        }
+      } catch { /* fallback below */ }
+    }
+    if (analysis.file_url) {
+      setActivePdfUrl(analysis.file_url)
+      return
+    }
+
+    // Fallback: fetch document row by document_id
     try {
       const { data: doc } = await supabaseClient
         .from('documents')
         .select('file_path, file_url')
         .eq('id', analysis.document_id)
         .single()
-      if (doc) {
+      if (doc?.file_path) {
         const { data: urlData } = await supabaseClient.storage
           .from('documents')
           .createSignedUrl(doc.file_path, 3600)

@@ -9,6 +9,8 @@ import { RiskAnalysis } from '@/utils/analysis'
 type Document = Database['public']['Tables']['documents']['Row']
 type Analysis = Database['public']['Tables']['analysis']['Row'] & {
   analysis: RiskAnalysis[]
+  file_path?: string | null
+  file_url?: string | null
 }
 
 interface DocumentListProps {
@@ -62,7 +64,12 @@ export default function DocumentList({ onAnalysisSelect, isCollapsed = false }: 
         .single()
 
       if (error || !analysis) { onAnalysisSelect(null); return }
-      onAnalysisSelect({ ...analysis, analysis: analysis.analysis as RiskAnalysis[] })
+      onAnalysisSelect({
+        ...analysis,
+        analysis: analysis.analysis as RiskAnalysis[],
+        file_path: document.file_path,
+        file_url: document.file_url,
+      })
     } catch { toast.error('Failed to fetch analysis'); onAnalysisSelect(null) }
   }
 
