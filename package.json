@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "quality": "pnpm lint && pnpm typecheck && pnpm build"
   },
   "dependencies": {
     "@cerebras/cerebras_cloud_sdk": "^1.29.0",
